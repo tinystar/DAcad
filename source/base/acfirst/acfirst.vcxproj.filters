@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="inc">
+      <UniqueIdentifier>{db4b3336-515b-4f33-a841-ab3c91411622}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sdk_inc">
+      <UniqueIdentifier>{8ac866db-b0ab-4a40-9402-8e09f12694f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{6163f196-1edd-49ab-9c11-36f236a29713}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\sdk\rxboiler.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\rxclass.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\rxdefs.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\rxdict.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\rxditer.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\rxiter.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\rxkernel.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\rxnames.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\rxobject.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\rxsrvice.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\acbasedefs.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\AdAChar.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rxclassi.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\cstrop.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acutmacro.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rxdicti.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rxcommon.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rxtypecbs.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\rxobject.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rxglobal.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rxclass.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rxclassi.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rxdicti.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rxtypecbs.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

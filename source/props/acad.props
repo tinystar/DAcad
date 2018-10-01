@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <AcadDir>$(SolutionDir)..\</AcadDir>
+    <AcadOutDir>$(AcadDir)out\</AcadOutDir>
+    <AcadBinDir>$(AcadOutDir)bin\$(Platform)\$(Configuration)\</AcadBinDir>
+    <AcadLibDir>$(AcadOutDir)lib\$(Platform)\$(Configuration)\</AcadLibDir>
+    <AcadPdbDir>$(AcadOutDir)pdb\$(Platform)\$(Configuration)\</AcadPdbDir>
+    <AcadTmpDir>$(AcadOutDir)tmp\$(Platform)\$(Configuration)\$(ProjectName)\</AcadTmpDir>
+    <AcadSdkInc>$(AcadDir)sdk\</AcadSdkInc>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutDir>$(AcadBinDir)</OutDir>
+    <IntDir>$(AcadTmpDir)</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(AcadSdkInc);.\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(AcadLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ProgramDatabaseFile>$(AcadPdbDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <ImportLibrary>$(AcadLibDir)$(TargetName).lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="AcadDir">
+      <Value>$(AcadDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="AcadOutDir">
+      <Value>$(AcadOutDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="AcadBinDir">
+      <Value>$(AcadBinDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="AcadLibDir">
+      <Value>$(AcadLibDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="AcadPdbDir">
+      <Value>$(AcadPdbDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="AcadTmpDir">
+      <Value>$(AcadTmpDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="AcadSdkInc">
+      <Value>$(AcadSdkInc)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
