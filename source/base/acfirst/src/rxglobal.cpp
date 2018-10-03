@@ -2,6 +2,8 @@
 #include "rxdicti.h"
 #include "rxnames.h"
 #include "acutmacro.h"
+#include "cstrop.h"
+#include <malloc.h>
 
 
 extern void initAcRxObject();
@@ -27,6 +29,28 @@ AcRxDictionary* newRxOpaqueDictionary(unsigned int a1, unsigned __int8 a2, unsig
 AcRxDictionary* acrxSysClasses(void)
 {
 	return sysClasses;
+}
+
+void delSysClasses(void)
+{
+	AC_SAFE_DELETE(sysClasses);
+}
+
+const ACHAR* acStrdup(const ACHAR* pszStr)
+{
+	ACHAR* pDupStr = NULL;
+	if (pszStr != NULL)
+	{
+		size_t len = ac_strlen(pszStr);
+		pDupStr = (ACHAR*)malloc(sizeof(ACHAR) * (len + 1));
+		if (NULL == ac_strcpy(pDupStr, pszStr))
+		{
+			free(pDupStr);
+			pDupStr = NULL;
+		}
+	}
+
+	return pDupStr;
 }
 
 

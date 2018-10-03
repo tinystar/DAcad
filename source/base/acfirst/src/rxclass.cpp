@@ -1,24 +1,27 @@
 #include "rxclass.h"
+#include "rxclassi.h"
 #include "rxboiler.h"
 #include "acutmacro.h"
 
 
 AcRxClass* newAcRxClass(const ACHAR* className, const ACHAR* parentClassName, int proxyFlags /*= 0*/, AcRxObject* (*pseudoConstructor)() /*= NULL*/, const ACHAR* dxfName /*= NULL*/, const ACHAR* appName /*= NULL*/)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return AcRxImpClass::newAcRxClassWorker(className, parentClassName, 0, 0, proxyFlags, pseudoConstructor, dxfName, appName, NULL, NULL, NULL, NULL);
 }
 
 AcRxClass* newAcRxClass(const ACHAR* className, const ACHAR* parentClassName, int dwgVer, int maintVer, int proxyFlags /*= 0*/, AcRxObject* (*pseudoConstructor)() /*= NULL*/, const ACHAR* dxfName /*= NULL*/, const ACHAR* appName /*= NULL*/, AppNameChangeFuncPtr func /*= NULL*/)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return AcRxImpClass::newAcRxClassWorker(className, parentClassName, dwgVer, maintVer, proxyFlags, pseudoConstructor, dxfName, appName, func, NULL, NULL, NULL);
 }
 
 AcRxClass* newAcRxClass(const ACHAR* className, const ACHAR* parentClassName, int dwgVer, int maintVer, int proxyFlags, AcRxObject* (*pseudoConstructor)(), const ACHAR* dxfName, const ACHAR* appName, AppNameChangeFuncPtr func, AcRxMemberCollectionConstructorPtr makeMembers, void* userData /*= NULL*/)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return AcRxImpClass::newAcRxClassWorker(className, parentClassName, dwgVer, maintVer, proxyFlags, pseudoConstructor, dxfName, appName, func, makeMembers, userData, NULL);
+}
+
+AcRxClass* newAcRxClass(const ACHAR* className, const ACHAR* parentClassName, AcRxMemberCollectionConstructorPtr makeMembers, void* userData, AcRxClass* pExistClass)
+{
+	return AcRxImpClass::newAcRxClassWorker(className, parentClassName, 0, 0, 0, NULL, NULL, NULL, NULL, makeMembers, userData, pExistClass);
 }
 
 
@@ -28,111 +31,100 @@ AcRxClass* newAcRxClass(const ACHAR* className, const ACHAR* parentClassName, in
 ACRX_NO_CONS_DEFINE_MEMBERS(AcRxClass, AcRxObject)
 
 AcRxClass::AcRxClass()
+	: m_pImp(NULL)
 {
 
 }
 
 AcRxClass::AcRxClass(const ACHAR* name, const ACHAR* parent, AcRxMemberCollectionConstructorPtr memberConstruct, void* userData /*= NULL*/)
+	: m_pImp(NULL)
 {
-
+	newAcRxClass(name, parent, memberConstruct, userData, this);
+	acrxConnectNewClass(this);
 }
 
 AcRxClass::~AcRxClass()
 {
-
+	if (m_pImp)
+		delete m_pImp;
 }
 
-AcRxObject* AcRxClass::addX(AcRxClass*, AcRxObject*)
+AcRxObject* AcRxClass::addX(AcRxClass* protocolClass, AcRxObject* pPEObject)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pImp->addX(protocolClass, pPEObject);
 }
 
-AcRxObject* AcRxClass::getX(const AcRxClass*)
+AcRxObject* AcRxClass::getX(const AcRxClass* protocolClass)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pImp->getX(protocolClass);
 }
 
-AcRxObject* AcRxClass::delX(AcRxClass*)
+AcRxObject* AcRxClass::delX(AcRxClass* protocolClass)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pImp->delX(protocolClass);
 }
 
-AcRxObject* AcRxClass::queryX(const AcRxClass*)
+AcRxObject* AcRxClass::queryX(const AcRxClass* protocolClass)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pImp->queryX(protocolClass);
 }
 
 AcRxObject* AcRxClass::create()
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pImp->create();
 }
 
 const ACHAR* AcRxClass::appName() const
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pImp->appName();
 }
 
 const ACHAR* AcRxClass::dxfName() const
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pImp->dxfName();
 }
 
 const ACHAR* AcRxClass::name() const
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pImp->name();
 }
 
 void AcRxClass::getClassVersion(int& dwgVer, int& maintVer) const
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
+	m_pImp->getClassVersion(dwgVer, maintVer);
 }
 
 int AcRxClass::proxyFlags() const
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return 0;
+	return m_pImp->proxyFlags();
 }
 
-bool AcRxClass::isDerivedFrom(const AcRxClass*) const
+bool AcRxClass::isDerivedFrom(const AcRxClass* pDstClass) const
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return false;
+	return m_pImp->isDerivedFrom(pDstClass);
 }
 
 AcRxClass* AcRxClass::myParent() const
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pImp->getParentClass();
 }
 
-AcRx::Ordering AcRxClass::comparedTo(const AcRxObject*) const
+AcRx::Ordering AcRxClass::comparedTo(const AcRxObject* pOther) const
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return AcRx::kNotOrderable;
+	return m_pImp->comparedTo(pOther);
 }
 
 AppNameChangeFuncPtr AcRxClass::appNameCallbackPtr() const
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pImp->appNameCallbackPtr();
 }
 
 const AcRxSet* AcRxClass::descendants() const
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pImp->descendants();
 }
 
 AcRxMemberCollection* AcRxClass::members() const
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pImp->members();
 }

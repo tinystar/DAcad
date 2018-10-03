@@ -36,26 +36,26 @@ public:
     virtual Adesk::Boolean resetKey(Adesk::UInt32 id, const ACHAR* newKey) = 0;		// 104//68h
 
     virtual Adesk::Boolean atKeyAndIdPut(const ACHAR* newKey, Adesk::UInt32 id,
-        AcRxObject* pObject) = 0;
+        AcRxObject* pObject) = 0;													// 112//70h
 
-    virtual AcRxObject*    remove  (const ACHAR* key) = 0;
-    virtual AcRxObject*    remove  (Adesk::UInt32 id) = 0;
+    virtual AcRxObject*    remove  (const ACHAR* key) = 0;							// 120//78h
+    virtual AcRxObject*    remove  (Adesk::UInt32 id) = 0;							// 128//80h
 
-    virtual Adesk::Boolean has     (const ACHAR* entryName) const = 0;
-    virtual Adesk::Boolean has     (Adesk::UInt32 id) const = 0;
+    virtual Adesk::Boolean has     (const ACHAR* entryName) const = 0;				// 136//88h
+    virtual Adesk::Boolean has     (Adesk::UInt32 id) const = 0;					// 144//90h
 
-    virtual Adesk::UInt32  idAt    (const ACHAR* key) const = 0;
+    virtual Adesk::UInt32  idAt    (const ACHAR* key) const = 0;					// 152//98h
 
-    virtual const ACHAR*    keyAt   (Adesk::UInt32 id) const = 0;
+    virtual const ACHAR*    keyAt   (Adesk::UInt32 id) const = 0;					// 160//A0h
 
-    virtual Adesk::UInt32  numEntries() const = 0;
+    virtual Adesk::UInt32  numEntries() const = 0;									// 168//A8h
 
     virtual AcRxDictionaryIterator* newIterator(
-        AcRx::DictIterType type = AcRx::kDictSorted) = 0;
+        AcRx::DictIterType type = AcRx::kDictSorted) = 0;							// 176//B0h
 
-    virtual Adesk::Boolean deletesObjects() const = 0;
-    virtual Adesk::Boolean isCaseSensitive() const = 0;
-    virtual Adesk::Boolean isSorted() const = 0;
+    virtual Adesk::Boolean deletesObjects() const = 0;								// 184//B8h
+    virtual Adesk::Boolean isCaseSensitive() const = 0;								// 192//C0h
+    virtual Adesk::Boolean isSorted() const = 0;									// 200//C8h
 };
 
 extern "C" ACBASE_PORT AcRxDictionary* acrxSysRegistry();

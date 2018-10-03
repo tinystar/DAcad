@@ -20,9 +20,9 @@ class AcRxIterator: public AcRxObject
 public:
     ACRX_DECLARE_MEMBERS_EXPIMP(AcRxIterator, ACBASE_PORT);
 
-    virtual Adesk::Boolean done() const = 0;
-    virtual Adesk::Boolean next() = 0;
-    virtual AcRxObject*    object() const = 0;
+    virtual Adesk::Boolean done() const = 0;		// 64//40h
+    virtual Adesk::Boolean next() = 0;				// 72//48h
+    virtual AcRxObject*    object() const = 0;		// 80//50h
 };
 
 #pragma pack (pop)
