@@ -11,5 +11,6 @@ AcRxDictionary* acrxSysClasses(void);
 void delSysClasses(void);
 
 const ACHAR* acStrdup(const ACHAR* pszStr);
+int acStricmp_local(const ACHAR* str1, const ACHAR* str2);
 
 #endif // _AC_RX_COMMON_H_

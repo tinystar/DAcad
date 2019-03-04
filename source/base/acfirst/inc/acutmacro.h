@@ -2,6 +2,7 @@
 #define _ACUT_MACRO_H_
 
 #include <assert.h>
+#include <malloc.h>
 
 #define AC_ASSERT(expr)					assert(expr)
 
@@ -9,6 +10,14 @@
 	do{														\
 		AC_ASSERT(false && ACRX_T("Not Implemented!!!"));	\
 	} while (0)
+
+
+#ifndef AC_MAKE_STR
+#define _AC_MAKE_STR(expr)				#expr
+#define AC_MAKE_STR(expr)				_AC_MAKE_STR(expr)
+#endif
+
+#define AC_COMPILE_MSG(msg)				message("CMSG: " __FILE__ "(" AC_MAKE_STR(__LINE__) "): " msg)
 
 
 #define AC_SAFE_DELETE(pointer)								\

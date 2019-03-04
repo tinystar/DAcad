@@ -18,12 +18,12 @@ static AcRxDictionary* sysClasses = NULL;
 //------------------------------------------------------------------
 AcRxDictionary* newAcRxDictionary(void)
 {
-	return new AcRxImpDictionary();
+	return new AcRxImpDictionary(false, false);
 }
 
-AcRxDictionary* newRxOpaqueDictionary(unsigned int a1, unsigned __int8 a2, unsigned __int8 a3, unsigned __int8 a4)
+AcRxDictionary* newRxOpaqueDictionary(unsigned int len, bool bDelObjs, bool bSorted, bool bIgnoreCase)
 {
-	return new AcRxImpDictionary();
+	return new AcRxImpDictionary(len, bDelObjs, bSorted, bIgnoreCase);
 }
 
 AcRxDictionary* acrxSysClasses(void)
@@ -51,6 +51,13 @@ const ACHAR* acStrdup(const ACHAR* pszStr)
 	}
 
 	return pDupStr;
+}
+
+int acStricmp_local(const ACHAR* str1, const ACHAR* str2)
+{
+#pragma AC_COMPILE_MSG("Not decompile completed yet! Simple implemented now!")
+
+	return ac_stricmp(str1, str2);
 }
 
 

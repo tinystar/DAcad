@@ -166,16 +166,27 @@
     <ClInclude Include="inc\acutmacro.h" />
     <ClInclude Include="inc\cstrop.h" />
     <ClInclude Include="inc\rxclassi.h" />
+    <ClInclude Include="inc\rxdicthelper.h" />
     <ClInclude Include="inc\rxdicti.h" />
     <ClInclude Include="inc\rxcommon.h" />
+    <ClInclude Include="inc\rxllist.h" />
+    <ClInclude Include="inc\rxmem.h" />
+    <ClInclude Include="inc\rxset.h" />
+    <ClInclude Include="inc\rxseti.h" />
+    <ClInclude Include="inc\rxtextstr.h" />
     <ClInclude Include="inc\rxtypecbs.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\rxclass.cpp" />
     <ClCompile Include="src\rxclassi.cpp" />
+    <ClCompile Include="src\rxdicthelper.cpp" />
     <ClCompile Include="src\rxdicti.cpp" />
     <ClCompile Include="src\rxglobal.cpp" />
+    <ClCompile Include="src\rxllist.cpp" />
+    <ClCompile Include="src\rxmem.cpp" />
     <ClCompile Include="src\rxobject.cpp" />
+    <ClCompile Include="src\rxseti.cpp" />
+    <ClCompile Include="src\rxtextstr.cpp" />
     <ClCompile Include="src\rxtypecbs.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

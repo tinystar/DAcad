@@ -26,8 +26,8 @@ public:
     ACRX_DECLARE_MEMBERS_EXPIMP(AcRxDictionaryIterator, ACBASE_PORT);
 
     virtual const ACHAR * key   () const = 0;		// 88//58h
-    virtual AcRxObject*   object() const = 0;		// 96//60h
-    virtual Adesk::UInt32 id    () const = 0;		// 104//68h
+    virtual AcRxObject*   object() const = 0;
+    virtual Adesk::UInt32 id    () const = 0;		// 96//60h
 };
 
 #pragma pack (pop)

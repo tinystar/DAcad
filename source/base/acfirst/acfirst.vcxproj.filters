@@ -66,6 +66,24 @@
     <ClInclude Include="inc\rxtypecbs.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="inc\rxtextstr.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rxdicthelper.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rxset.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rxseti.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rxllist.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rxmem.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\rxobject.cpp">
@@ -84,6 +102,21 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\rxtypecbs.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rxtextstr.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rxdicthelper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rxseti.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rxllist.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rxmem.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
