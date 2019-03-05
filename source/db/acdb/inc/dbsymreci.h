@@ -1,5 +1,5 @@
-#ifndef __DB_SYMRECI_H__
-#define __DB_SYMRECI_H__
+#ifndef _AC_DB_SYMRECI_H_
+#define _AC_DB_SYMRECI_H_
 
 #include "dbobji.h"
 
@@ -28,4 +28,4 @@ protected:
 
 };
 
-#endif // __DB_SYMRECI_H__
+#endif // _AC_DB_SYMRECI_H_

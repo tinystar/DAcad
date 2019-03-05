@@ -1,5 +1,5 @@
-#ifndef __DB_OBJI_H__
-#define __DB_OBJI_H__
+#ifndef _AC_DB_OBJI_H_
+#define _AC_DB_OBJI_H_
 
 #include "dbmain.h"
 #include "dbidmap.h"
@@ -36,4 +36,4 @@ protected:
 	AcDbObjectId	m_id;			// 24
 };
 
-#endif // __DB_OBJI_H__
+#endif // _AC_DB_OBJI_H_

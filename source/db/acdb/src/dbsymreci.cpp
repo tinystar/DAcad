@@ -1,10 +1,12 @@
 #include "dbsymreci.h"
 #include "dbsymtb.h"
+#include "acutmacro.h"
 
 
 Acad::ErrorStatus AcDbImpSymbolTableRecord::deepClone(AcDbObject* pOwnerObject, AcDbObject*& pClonedObject, AcDbIdMapping& idMap, Adesk::Boolean isPrimary /*= true*/) const
 {
-
+	AC_ASSERT_NOT_IMPLEMENTED();
+	return Acad::eNotImplementedYet;
 }
 
 Acad::ErrorStatus AcDbImpSymbolTableRecord::wblockClone(AcRxObject* pOwnerObject, AcDbObject*& pClonedObject, AcDbIdMapping& idMap, Adesk::Boolean isPrimary /*= true*/) const
