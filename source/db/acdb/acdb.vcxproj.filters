@@ -30,12 +30,81 @@
     <ClInclude Include="..\..\..\sdk\dbidmap.h">
       <Filter>sdk_inc</Filter>
     </ClInclude>
+    <ClInclude Include="inc\dbdbi.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dblocki.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\dbhandle.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\dbid.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbHandleTable.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbSysInternals.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbheader.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbstub.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\dbdimvar.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbDimVarDef.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\acutmem.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\acadstrc.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dbobji.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\dbsymreci.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbdb.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbdbi.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dblocki.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbHandleTable.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbSysInternals.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbheader.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbobj.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbstub.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbcolor.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\acutmem.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbid.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

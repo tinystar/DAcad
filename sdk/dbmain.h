@@ -1329,7 +1329,7 @@ public:
 
 private:
     friend class AcDbSystemInternals;
-    AcDbImpDatabase* mpImpDb;
+    AcDbImpDatabase* mpImpDb;			// 8
 };
 
 //  Backward compatibility.
