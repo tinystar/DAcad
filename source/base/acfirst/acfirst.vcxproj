@@ -164,6 +164,8 @@
     <ClInclude Include="..\..\..\sdk\rxnames.h" />
     <ClInclude Include="..\..\..\sdk\rxobject.h" />
     <ClInclude Include="..\..\..\sdk\rxsrvice.h" />
+    <ClInclude Include="inc\acHeapManager.h" />
+    <ClInclude Include="inc\acMemPool.h" />
     <ClInclude Include="inc\acutmacro.h" />
     <ClInclude Include="inc\cstrop.h" />
     <ClInclude Include="inc\rxclassi.h" />
@@ -178,7 +180,9 @@
     <ClInclude Include="inc\rxtypecbs.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\acHeapManager.cpp" />
     <ClCompile Include="src\AcHeapOpers.cpp" />
+    <ClCompile Include="src\acMemPool.cpp" />
     <ClCompile Include="src\rxclass.cpp" />
     <ClCompile Include="src\rxclassi.cpp" />
     <ClCompile Include="src\rxdicthelper.cpp" />
