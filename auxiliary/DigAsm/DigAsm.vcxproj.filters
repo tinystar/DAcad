@@ -15,6 +15,9 @@
     <ClCompile Include="src\TestSchd.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\MacMemorySegment.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\TestSchd.h">

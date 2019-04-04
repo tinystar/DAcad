@@ -32,8 +32,9 @@ private:
 		std::string		_description;
 		TestEntrypoint	_entrypoint;
 
-		TestEntry()
-			: _entrypoint(NULL)
+		TestEntry(const char* pszDesc, TestEntrypoint method)
+			: _entrypoint(method)
+			, _description(pszDesc)
 		{}
 	};
 

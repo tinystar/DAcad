@@ -80,6 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\MacMemorySegment.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\TestSchd.cpp" />
   </ItemGroup>

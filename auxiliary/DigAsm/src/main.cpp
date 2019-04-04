@@ -4,6 +4,7 @@
 int main()
 {
 	TestScheduler::scheduler()->run();
+	TestScheduler::destroy();
 
 	return 0;
 }
