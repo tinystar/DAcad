@@ -87,10 +87,10 @@
     <ClInclude Include="..\..\..\sdk\AcHeapOpers.h">
       <Filter>sdk_inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\acHeapManager.h">
+    <ClInclude Include="inc\acMemPool.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\acMemPool.h">
+    <ClInclude Include="inc\acFixedHeap.h">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
@@ -131,11 +131,14 @@
     <ClCompile Include="src\AcHeapOpers.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\acHeapManager.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\acMemPool.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\acFixedHeap.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="acfirst.def" />
   </ItemGroup>
 </Project>

@@ -21,10 +21,7 @@ MacSameSizePool::~MacSameSizePool()
 	{
 		MacMemorySegment* pSegment = *iter;
 		if (pSegment != NULL)
-		{
-			free(pSegment->m_pUnk8 - 8);
 			delete pSegment;
-		}
 	}
 
 	unRegSameSizePool(this);
@@ -137,7 +134,6 @@ void MacSameSizePool::release(void* pMem)
 			m_unk8.remove(pSegment);
 			m_unk32.remove(pSegment);
 
-			free(pSegment->m_pUnk8 - 8);
 			delete pSegment;
 		}
 	}
@@ -165,7 +161,6 @@ void MacSameSizePool::unRegSameSizePool(MacSameSizePool* pPool)
 		if (*iter == pPool)
 		{
 			s_AllSameSizePool.erase(iter);
-			delete *iter;
 			return;
 		}
 	}
@@ -223,7 +218,8 @@ MacMemorySegment::MacMemorySegment(size_t size)
 
 MacMemorySegment::~MacMemorySegment()
 {
-
+	if (m_pUnk8 != NULL)
+		free(*(void**)(m_pUnk8 - 8));
 }
 
 void* MacMemorySegment::allocate(void)
@@ -260,3 +256,40 @@ void* MacMemorySegment::allocate(void)
 
 	return pAlloc;
 }
+
+
+//------------------------------------------------------------------
+// HeapManager
+//------------------------------------------------------------------
+CRITICAL_SECTION HeapManager::criticalSection;
+bool HeapManager::sm_bInited = false;
+bool HeapManager::sm_bFreeDisabled = false;
+bool HeapManager::sm_bUseAcHeap = false;
+
+
+HeapManager::HeapManager()
+{
+	InitializeCriticalSection(&criticalSection);
+	EnterCriticalSection(&criticalSection);
+
+	sm_bInited = true;
+	sm_bFreeDisabled = false;
+
+	// 	size_t var1Size, var2Size;
+	// 	_tgetenv_s(&var1Size, NULL, 0, _T("disableAcadHeap"));
+	// 	_tgetenv_s(&var2Size, NULL, 0, _T("CRTLeakReport"));
+	// 	if (0 == var1Size && 0 == var2Size)
+	sm_bUseAcHeap = true;
+
+	LeaveCriticalSection(&criticalSection);
+}
+
+HeapManager::~HeapManager()
+{
+	EnterCriticalSection(&criticalSection);
+	MacSameSizePool::terminate();
+	sm_bInited = false;
+	LeaveCriticalSection(&criticalSection);
+}
+
+HeapManager heapMgr;

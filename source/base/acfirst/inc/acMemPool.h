@@ -1,6 +1,7 @@
 #ifndef _AC_MEM_POOL_H_
 #define _AC_MEM_POOL_H_
 
+#include <windows.h>
 #include <list>
 #include "adesk.h"
 
@@ -83,6 +84,25 @@ private:
 	size_t			m_size;		// 0
 	MemSegmentList	m_unk8;		// 8
 	MemSegmentList	m_unk32;	// 32
+};
+
+class HeapManager
+{
+public:
+	HeapManager();
+	~HeapManager();
+
+	static void lock() { EnterCriticalSection(&criticalSection); }
+	static void unlock() { LeaveCriticalSection(&criticalSection); }
+
+	static bool freeDisabled() { return sm_bFreeDisabled; }
+	static bool useAcHeap() { return sm_bUseAcHeap; }
+
+private:
+	static CRITICAL_SECTION criticalSection;
+	static bool sm_bInited;
+	static bool sm_bFreeDisabled;
+	static bool sm_bUseAcHeap;
 };
 
 #endif // _AC_MEM_POOL_H_

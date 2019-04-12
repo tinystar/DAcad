@@ -95,6 +95,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>acfirst.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -110,6 +111,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>acfirst.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -129,6 +131,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <ModuleDefinitionFile>acfirst.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -148,6 +151,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <ModuleDefinitionFile>acfirst.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -164,7 +168,7 @@
     <ClInclude Include="..\..\..\sdk\rxnames.h" />
     <ClInclude Include="..\..\..\sdk\rxobject.h" />
     <ClInclude Include="..\..\..\sdk\rxsrvice.h" />
-    <ClInclude Include="inc\acHeapManager.h" />
+    <ClInclude Include="inc\acFixedHeap.h" />
     <ClInclude Include="inc\acMemPool.h" />
     <ClInclude Include="inc\acutmacro.h" />
     <ClInclude Include="inc\cstrop.h" />
@@ -180,7 +184,7 @@
     <ClInclude Include="inc\rxtypecbs.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\acHeapManager.cpp" />
+    <ClCompile Include="src\acFixedHeap.cpp" />
     <ClCompile Include="src\AcHeapOpers.cpp" />
     <ClCompile Include="src\acMemPool.cpp" />
     <ClCompile Include="src\rxclass.cpp" />
@@ -194,6 +198,9 @@
     <ClCompile Include="src\rxseti.cpp" />
     <ClCompile Include="src\rxtextstr.cpp" />
     <ClCompile Include="src\rxtypecbs.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="acfirst.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

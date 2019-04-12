@@ -1,5 +1,5 @@
-#ifndef _AC_HEAP_MANAGER_H_
-#define _AC_HEAP_MANAGER_H_
+#ifndef _AC_FIXED_HEAP_H_
+#define _AC_FIXED_HEAP_H_
 
 class MacSameSizePool;
 
@@ -21,4 +21,4 @@ void __acFreeAligned(void* pMem);
 }
 #endif
 
-#endif // _AC_HEAP_MANAGER_H_
+#endif // _AC_FIXED_HEAP_H_

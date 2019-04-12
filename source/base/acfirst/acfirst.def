@@ -1,0 +1,11 @@
+EXPORTS
+
+;---------------------------------------------------------------------
+;AcFixedSizeHeap
+;---------------------------------------------------------------------
+__acHeapCreate
+__acHeapDestroy
+__acHeapMalloc
+__acHeapSize
+__acMallocAligned
+__acFreeAligned
