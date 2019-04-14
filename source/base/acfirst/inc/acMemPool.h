@@ -7,33 +7,42 @@
 
 class MacMemorySegment		// size: 0x30
 {
-	friend class MacSameSizePool;
-
 public:
 	MacMemorySegment(size_t size);
 	~MacMemorySegment();
 
 public:
 	void* allocate(void);
+	void release(void* pMem);
 
 	bool contains(const void* pBlock) const
 	{
-		return (m_pUnk8 <= pBlock && pBlock < m_pUnk24);
+		return (m_pSegBegin <= pBlock && pBlock < m_pSegEnd);
 	}
 
 	bool isUsedUp() const
 	{
-		return m_pUnk8 != NULL && NULL == m_pUnk32 && (m_pUnk16 + m_size > m_pUnk24);
+		return m_pSegBegin != NULL && NULL == m_pFreeBlock && (m_pUnuseBlock + m_nBlockSize > m_pSegEnd);
+	}
+
+	bool isAllReleased() const
+	{
+		return NULL == m_pSegBegin || m_nFreeCount == m_nBlockCount;
 	}
 
 private:
-	size_t				m_size;		// 0
-	MEMORY_POINTER		m_pUnk8;	// 8
-	MEMORY_POINTER		m_pUnk16;	// 16
-	MEMORY_POINTER		m_pUnk24;	// 24
-	MEMORY_POINTER		m_pUnk32;	// 32
-	size_t				m_unk40;	// 40
-	size_t				m_unk44;	// 44
+	struct Block
+	{
+		Block* _next;
+	};
+
+	size_t		m_nBlockSize;		// 0
+	char*		m_pSegBegin;		// 8
+	char*		m_pUnuseBlock;		// 16
+	char*		m_pSegEnd;			// 24
+	Block*		m_pFreeBlock;		// 32
+	size_t		m_nFreeCount;		// 40
+	size_t		m_nBlockCount;		// 44
 };
 
 class MacSameSizePool
@@ -81,9 +90,9 @@ private:
 private:
 	typedef std::list<MacMemorySegment*> MemSegmentList;
 
-	size_t			m_size;		// 0
-	MemSegmentList	m_unk8;		// 8
-	MemSegmentList	m_unk32;	// 32
+	size_t			m_size;			// 0
+	MemSegmentList	m_segList;		// 8
+	MemSegmentList	m_freeList;		// 32
 };
 
 class HeapManager

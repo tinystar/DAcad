@@ -15,8 +15,8 @@ MacSameSizePool::MacSameSizePool(size_t size)
 
 MacSameSizePool::~MacSameSizePool()
 {
-	for (MemSegmentList::iterator iter = m_unk8.begin();
-		iter != m_unk8.end();
+	for (MemSegmentList::iterator iter = m_segList.begin();
+		iter != m_segList.end();
 		++iter)
 	{
 		MacMemorySegment* pSegment = *iter;
@@ -26,8 +26,8 @@ MacSameSizePool::~MacSameSizePool()
 
 	unRegSameSizePool(this);
 	
-	m_unk32.clear();
-	m_unk8.clear();
+	m_freeList.clear();
+	m_segList.clear();
 }
 
 MacSameSizePool* MacSameSizePool::newPool(size_t size)
@@ -56,9 +56,11 @@ MacSameSizePool* MacSameSizePool::getDefaultPool(size_t size, bool bNewPool)
 		iter != s_DefaultSameSizePool.end();
 		++iter)
 	{
-		pPool = *iter;
-		if (pPool->size() == size)
+		if ((*iter)->size() == size)
+		{
+			pPool = *iter;
 			break;
+		}
 	}
 
 	if (NULL == pPool && bNewPool)
@@ -79,8 +81,8 @@ MacSameSizePool* MacSameSizePool::newDefaultPool(size_t size)
 void* MacSameSizePool::allocate(void)
 {
 	MacMemorySegment* pSegment = NULL;
-	if (m_unk32.size() > 0)
-		pSegment = m_unk32.front();
+	if (m_freeList.size() > 0)
+		pSegment = m_freeList.front();
 	else
 		pSegment = allocSegment();
 
@@ -90,7 +92,7 @@ void* MacSameSizePool::allocate(void)
 		pMem = pSegment->allocate();
 		if (pSegment->isUsedUp())
 		{
-			m_unk32.remove(pSegment);
+			m_freeList.remove(pSegment);
 		}
 	}
 
@@ -102,37 +104,33 @@ void MacSameSizePool::release(void* pMem)
 	if (pMem != NULL)
 	{
 		MacMemorySegment* pSegment = NULL;
-		for (MemSegmentList::iterator iter = m_unk8.begin();
-			iter != m_unk8.end();
+		for (MemSegmentList::iterator iter = m_segList.begin();
+			iter != m_segList.end();
 			++iter)
 		{
-			pSegment = *iter;
-			if (pSegment->contains(pMem))
+			if ((*iter)->contains(pMem))
+			{
+				pSegment = *iter;
 				break;
+			}
 		}
 
 		if (NULL == pSegment)
 			return;
 
-		bool bUnk11 = false;
-		if (pSegment->m_pUnk8 != NULL)
-		{
-			if (NULL == pSegment->m_pUnk32)
-				bUnk11 = (pSegment->m_pUnk16 + pSegment->m_size) > pSegment->m_pUnk24;
-		}
+		bool bUseup = pSegment->isUsedUp();
 
-		*(Adesk::Int8**)pMem = pSegment->m_pUnk32;
-		pSegment->m_pUnk32 = (MEMORY_POINTER)pMem;
-		++pSegment->m_unk40;
-		if (pSegment->m_pUnk8 && pSegment->m_unk40 != pSegment->m_unk44)
+		pSegment->release(pMem);
+
+		if (!pSegment->isAllReleased())
 		{
-			if (bUnk11)
-				m_unk32.push_back(pSegment);
+			if (bUseup)
+				m_freeList.push_back(pSegment);
 		}
-		else if (m_unk32.size() != 1)
+		else if (m_freeList.size() != 1)
 		{
-			m_unk8.remove(pSegment);
-			m_unk32.remove(pSegment);
+			m_segList.remove(pSegment);
+			m_freeList.remove(pSegment);
 
 			delete pSegment;
 		}
@@ -142,8 +140,8 @@ void MacSameSizePool::release(void* pMem)
 MacMemorySegment* MacSameSizePool::allocSegment(void)
 {
 	MacMemorySegment* pSegment = new MacMemorySegment(m_size);
-	m_unk8.push_front(pSegment);
-	m_unk32.push_front(pSegment);
+	m_segList.push_front(pSegment);
+	m_freeList.push_front(pSegment);
 	return pSegment;
 }
 
@@ -183,8 +181,8 @@ MacSameSizePool* MacSameSizePool::getPoolByBlock(const void* pBlock)
 
 MacMemorySegment* MacSameSizePool::getSegmentByBlock(const void* pBlock)
 {
-	for (MemSegmentList::iterator iter = m_unk8.begin();
-		iter != m_unk8.end();
+	for (MemSegmentList::iterator iter = m_segList.begin();
+		iter != m_segList.end();
 		++iter)
 	{
 		if ((*iter)->contains(pBlock))
@@ -204,57 +202,67 @@ bool MacSameSizePool::contains(const void* pBlock)
 // MacMemorySegment
 //------------------------------------------------------------------
 MacMemorySegment::MacMemorySegment(size_t size)
-	: m_pUnk8(NULL)
-	, m_pUnk16(NULL)
-	, m_pUnk24(NULL)
-	, m_pUnk32(NULL)
-	, m_unk40(0)
-	, m_unk44(0)
+	: m_pSegBegin(NULL)
+	, m_pUnuseBlock(NULL)
+	, m_pSegEnd(NULL)
+	, m_pFreeBlock(NULL)
+	, m_nFreeCount(0)
+	, m_nBlockCount(0)
 {
 	if (size < 8)
 		size = 8;
-	m_size = size;
+	m_nBlockSize = size;
 }
 
 MacMemorySegment::~MacMemorySegment()
 {
-	if (m_pUnk8 != NULL)
-		free(*(void**)(m_pUnk8 - 8));
+	if (m_pSegBegin != NULL)
+		free(*(void**)(m_pSegBegin - 8));
 }
 
 void* MacMemorySegment::allocate(void)
 {
-	if (NULL == m_pUnk8)
+	if (NULL == m_pSegBegin)
 	{
-		MEMORY_POINTER pMem = (MEMORY_POINTER)malloc(0x11007);
+		char* pMem = (char*)malloc(0x11007);
 		Adesk::UInt16 uOff = (Adesk::UInt16)(pMem + 8) & 0x0FFF;
-		*(Adesk::Int8**)(pMem - uOff + 0x1000) = pMem;
-		MEMORY_POINTER pUnk = 0x1000 - uOff + pMem + 8;
-		m_pUnk8 = pUnk;
-		if (NULL == pUnk)
+		*(void**)(pMem - uOff + 0x1000) = pMem;
+		m_pSegBegin = pMem + 8 - uOff + 0x1000;
+		if (NULL == m_pSegBegin)
 			return NULL;
 
-		m_pUnk16 = pUnk;
-		m_pUnk24 = pUnk + 0x10000;
-		m_unk44 = 0x10000 / m_size;
+		m_pUnuseBlock = m_pSegBegin;
+		m_pSegEnd = m_pSegBegin + 0x10000;
+		m_nBlockCount = 0x10000 / m_nBlockSize;
 	}
 
-	void* pAlloc = m_pUnk32;
+	void* pAlloc = m_pFreeBlock;
 	if (pAlloc != NULL)
 	{
-		m_pUnk32 = (MEMORY_POINTER)*(Adesk::IntPtr*)pAlloc;
-		--m_unk40;
+		m_pFreeBlock = ((Block*)pAlloc)->_next;
+		--m_nFreeCount;
 	}
 	else
 	{
-		if (m_pUnk16 + m_size <= m_pUnk24)
+		if (m_pUnuseBlock + m_nBlockSize <= m_pSegEnd)
 		{
-			pAlloc = m_pUnk16;
-			m_pUnk16 = m_pUnk16 + m_size;
+			pAlloc = m_pUnuseBlock;
+			m_pUnuseBlock += m_nBlockSize;
 		}
 	}
 
 	return pAlloc;
+}
+
+void MacMemorySegment::release(void* pMem)
+{
+	if (NULL == pMem)
+		return;
+
+	Block* pMemBlock = (Block*)pMem;
+	pMemBlock->_next = m_pFreeBlock;
+	m_pFreeBlock = pMemBlock;
+	++m_nFreeCount;
 }
 
 
