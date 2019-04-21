@@ -1,0 +1,18 @@
+EXPORTS
+
+;---------------------------------------------------------------------
+;AcDbDatabase
+;---------------------------------------------------------------------
+??0AcDbDatabase@@QEAA@_N0@Z
+
+
+;---------------------------------------------------------------------
+; symbols exported below is for test purpose
+;---------------------------------------------------------------------
+
+;---------------------------------------------------------------------
+;AcDbHandleTable
+;---------------------------------------------------------------------
+??0AcDbHandleTable@@QEAA@PEAVAcDbDatabase@@_N@Z
+??1AcDbHandleTable@@QEAA@XZ
+?addHandle@AcDbHandleTable@@QEAA?AW4ErrorStatus@Acad@@AEAPEAVAcDbStub@@AEBVAcDbHandle@@@Z

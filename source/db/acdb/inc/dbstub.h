@@ -10,6 +10,16 @@ class AcDbEntity;
 
 class AcDbStub
 {
+	friend struct AcDbStubPage;
+
+private:
+	AcDbStub();
+	~AcDbStub();
+
+	// No implementation, class copy forbidden
+	AcDbStub(const AcDbStub&);
+	AcDbStub& operator= (const AcDbStub&);
+
 public:
 	void mayHaveNonResidentSubspace(void);
 	void space(void);

@@ -108,4 +108,8 @@
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="acdb.def" />
+    <None Include="acdb_x64.def" />
+  </ItemGroup>
 </Project>

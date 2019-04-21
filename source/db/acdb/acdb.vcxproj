@@ -96,6 +96,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>acfirst.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>acdb.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -112,6 +113,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>acfirst.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>acdb_x64.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -132,6 +134,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>acfirst.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>acdb.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -152,6 +155,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>acfirst.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>acdb_x64.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -188,6 +192,10 @@
     <ClCompile Include="src\dbstub.cpp" />
     <ClCompile Include="src\dbsymreci.cpp" />
     <ClCompile Include="src\dbSysInternals.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="acdb.def" />
+    <None Include="acdb_x64.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
