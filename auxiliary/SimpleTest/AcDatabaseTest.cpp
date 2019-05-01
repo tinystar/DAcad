@@ -1,5 +1,9 @@
 #include "dbHandleTable.h"
+#include "dbmain.h"
+#include <string>
+#include <iostream>
 
+using namespace std;
 
 void testAcDbHandleTable()
 {
@@ -28,7 +32,17 @@ void testAcDbHandleTable()
 	//delete pHandleTable;
 }
 
+void testReadDwgFile()
+{
+	AcDbDatabase* pDb = new AcDbDatabase();
+	wstring sDwgFile;
+	wcin >> sDwgFile;
+	pDb->readDwgFile(sDwgFile.c_str());
+	delete pDb;
+}
+
 void testDatabaseEntry()
 {
-	testAcDbHandleTable();
+	//testAcDbHandleTable();
+	testReadDwgFile();
 }
