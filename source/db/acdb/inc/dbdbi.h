@@ -6,6 +6,7 @@
 #include "AcHeapOpers.h"
 
 class AcDbObject;
+class AcDbGlobals;
 
 
 class AcDbImpDatabase : public AcHeapOperators	// win size: 1050h
@@ -15,6 +16,9 @@ public:
 	virtual ~AcDbImpDatabase();
 
 public:
+	AcDbDatabase* apiDatabase() const { return m_pDb; }
+
+public:
 	Acad::ErrorStatus buildDefaultDwg(bool);
 	Acad::ErrorStatus defaultTheTables(bool);
 
@@ -22,20 +26,21 @@ public:
 
 	void fixupHeaderData(void);
 
-public:
 	AcDbHeader* header() { return &m_header; }
 
 	Acad::ErrorStatus addAcDbObject(AcDbObject* pObj);
 	Acad::ErrorStatus addAcDbObject(AcDbObjectId& objId, AcDbObject* pObj);
 	Acad::ErrorStatus addAcDbObjectAtAcDbHandle(AcDbObjectId& objId, AcDbObject* pObj, const AcDbHandle& handle, bool b);
 
-public:
 	void sendConstructedNotification(void);
+
+	Acad::ErrorStatus readDwgFile(const ACHAR* fileName, int shmode, bool bAllowCPConversion, const wchar_t* wszPassword);
 
 private:
 	AcDbDatabase*		m_pDb;				// 40
 	AcDbHeader			m_header;			// 120
 	AcDbHandleTable*	m_pHandleTable;		// 3048
+	AcDbGlobals*		m_pGlobals;			// 3384
 	bool				m_bUnk3995;			// 3995
 };
 

@@ -86,3 +86,8 @@ Acad::ErrorStatus AcDbDatabase::setDimldrblk(const ACHAR* v)
 	AC_ASSERT_NOT_IMPLEMENTED();
 	return Acad::eNotImplementedYet;
 }
+
+Acad::ErrorStatus AcDbDatabase::readDwgFile(const ACHAR* fileName, const int shmode /*= _SH_DENYWR*/, bool bAllowCPConversion /*= false*/, const wchar_t* wszPassword /*= NULL*/)
+{
+	return mpImpDb->readDwgFile(fileName, shmode, bAllowCPConversion, wszPassword);
+}

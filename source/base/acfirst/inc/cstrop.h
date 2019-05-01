@@ -5,6 +5,7 @@
 
 #define ac_strcmp			_tcscmp
 #define ac_stricmp			_tcsicmp
+#define ac_strncmp			_tcsncmp
 #define ac_strlen			_tcslen
 #define ac_strcpy			_tcscpy
 #define ac_strcat			_tcscat

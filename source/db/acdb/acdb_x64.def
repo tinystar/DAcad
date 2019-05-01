@@ -4,6 +4,7 @@ EXPORTS
 ;AcDbDatabase
 ;---------------------------------------------------------------------
 ??0AcDbDatabase@@QEAA@_N0@Z
+?readDwgFile@AcDbDatabase@@QEAA?AW4ErrorStatus@Acad@@PEB_WH_N0@Z
 
 
 ;---------------------------------------------------------------------

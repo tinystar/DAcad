@@ -66,6 +66,30 @@
     <ClInclude Include="..\..\..\sdk\acadstrc.h">
       <Filter>sdk_inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\sdk\dbapserv.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dwgFileInt.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\codepgid.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\dbsecurity.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dwgFileImpBase.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbOpenSaveGlobal.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbutil.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbGlobals.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dbobji.cpp">
@@ -105,6 +129,24 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\dbid.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dwgFileInt.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dwgFileImpBase.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbOpenSaveGlobal.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbutil.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbapservi.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbGlobals.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

@@ -2,11 +2,29 @@
 #include "dbmain.h"
 #include "dbHandleTable.h"
 #include "acutmacro.h"
+#include "dbapserv.h"
+#include <windows.h>
+#include "cstrop.h"
+#include "dwgFileImpBase.h"
+#include "dbGlobals.h"
+
+const int _SH_DENY_AC2004 = 0x0ACAD2004;
+
+const ACHAR* kszAdeHackString = _T("ADE hack to ignore file lock of__");
+
+bool acdbDwkFileExists(const ACHAR* fileName)
+{
+	AC_ASSERT_NOT_IMPLEMENTED();
+	return false;
+}
 
 
 AcDbImpDatabase::AcDbImpDatabase(AcDbDatabase* pDb, bool noDocument)
-	: m_header(pDb)
+	: m_pDb(pDb)
+	, m_header(pDb)
 	, m_pHandleTable(NULL)
+	, m_pGlobals(NULL)
+	, m_bUnk3995(false)
 {
 
 }
@@ -95,4 +113,69 @@ void AcDbImpDatabase::fixupHeaderData(void)
 void AcDbImpDatabase::sendConstructedNotification(void)
 {
 	AC_ASSERT_NOT_IMPLEMENTED();
+}
+
+Acad::ErrorStatus AcDbImpDatabase::readDwgFile(const ACHAR* fileName, int shmode, bool bAllowCPConversion, const wchar_t* wszPassword)
+{
+	if (NULL == fileName || 0 == *fileName)
+		return Acad::eInvalidInput;
+
+	Acad::ErrorStatus es = Acad::eOk;
+	AcDbHostApplicationServices* pAppServices = acdbHostApplicationServices();
+	ACHAR szLocalFile[MAX_PATH] = { 0 };
+	if (pAppServices != NULL && pAppServices->isURL(fileName))		// 440
+	{
+		if ((es = pAppServices->getRemoteFile(fileName, szLocalFile)) > Acad::eInetInCache)		// 456
+			return es;
+
+		fileName = szLocalFile;
+	}
+
+	bool bNotAdeFile = ac_strncmp(fileName, kszAdeHackString, 33) != 0;
+	const ACHAR* pszFileRead = fileName;
+	if (!bNotAdeFile)
+		pszFileRead = fileName + 33;
+
+	unsigned int desiredAccess = 0;
+	unsigned int shareMode = 0;
+	if (_SH_DENYRW == shmode)
+	{
+		if (bNotAdeFile)
+		{
+			if (acdbDwkFileExists(pszFileRead))
+				return Acad::eDwkLockFileFound;
+		}
+
+		desiredAccess = GENERIC_READ | GENERIC_WRITE;
+	}
+	else if (_SH_DENYRD == shmode)
+	{
+		return Acad::eInvalidInput;
+	}
+	else if (_SH_DENYNO == shmode)
+	{
+		desiredAccess = GENERIC_READ;
+		shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+	}
+	else if (_SH_DENYWR == shmode)
+	{
+		desiredAccess = GENERIC_READ;
+		shareMode = FILE_SHARE_READ;
+	}
+	else if (_SH_DENY_AC2004 == shmode)
+	{
+		desiredAccess = GENERIC_READ;
+		shareMode = FILE_SHARE_READ;
+	}
+	else
+	{
+		return Acad::eInvalidInput;
+	}
+
+	m_pGlobals->m_bDbLoading = true;		// 3384// 1272
+
+	es = Acad::eNotImplementedYet;
+	DwgFileImpBase* pDwgFileBase = DwgFileImpBase::openWithModes(pszFileRead, desiredAccess, shareMode, false, false, es, NULL);
+
+	return es;
 }

@@ -166,7 +166,7 @@ public:
                  const ACHAR * pcFilename,
                  AcDbDatabase * pDb = NULL, // When this search 
                                             // is related to a db
-                 AcDbHostApplicationServices::FindFileHint hint = kDefault) = 0;
+                 AcDbHostApplicationServices::FindFileHint hint = kDefault) = 0;		// 64//40h
 
     // These two functions return the full path to the root folder where roamable/local 
     // customizable files were installed. The default implementation is to return the
@@ -177,14 +177,14 @@ public:
     // files. To locate customizable files either use the findFile function or the 
     // appropriate system variable for the given file type. 
     //
-    virtual Acad::ErrorStatus getRoamableRootFolder(const ACHAR *& folder);
-    virtual Acad::ErrorStatus getLocalRootFolder(const ACHAR *& folder);
-    virtual Acad::ErrorStatus getAllUsersRootFolder(const ACHAR*& folder);
+    virtual Acad::ErrorStatus getRoamableRootFolder(const ACHAR *& folder);		// 72//48h
+    virtual Acad::ErrorStatus getLocalRootFolder(const ACHAR *& folder);		// 80//50h
+    virtual Acad::ErrorStatus getAllUsersRootFolder(const ACHAR*& folder);		// 88//58h
 
     // Returns the full path of the graphics cache files folder. The default path 
     // <localroot>\GraphicsCache.
     //
-    virtual Acad::ErrorStatus getGraphicsCacheFolder(const ACHAR *& folder);
+    virtual Acad::ErrorStatus getGraphicsCacheFolder(const ACHAR *& folder);	// 96//60h
 
     // Select File APIs
     virtual Acad::ErrorStatus   selectFile(short *userCancel, 
@@ -198,76 +198,76 @@ public:
                                            int* pnChoice,
                                            bool* pbReadOnly,
                                            const ACHAR * pszWSTags,
-                                           void* pReserved) ;
+                                           void* pReserved) ;					// 104//68h
     virtual Acad::ErrorStatus   registerSelectFileCallback(const ACHAR * appName,
                                                    SELECTFILEPROC proc, 
                                                    bool unRegister = false, 
-                                                   bool asPrimary  = false);
-    virtual const ACHAR *       primaryClientForSelectFileCallback();
+                                                   bool asPrimary  = false);	// 112//70h
+    virtual const ACHAR *       primaryClientForSelectFileCallback();			// 120//78h
     virtual Acad::ErrorStatus   getRegisteredSelectFileClients(
-                                            AcArray<const ACHAR *>& clients);
+                                            AcArray<const ACHAR *>& clients);	// 128//80h
 
     // File remapping
     virtual Acad::ErrorStatus   mapFile(/*out*/ ACHAR *& newName,
                                         const ACHAR * filename,
                                         int context,
-                                        void* pReserved);
+                                        void* pReserved);						// 136//88h
     virtual Acad::ErrorStatus   registerMapFileCallback(const ACHAR * appName,
                                                 REMAPPROC  proc,
                                                 bool unRegister = false, 
-                                                bool asPrimary  = false);
-    virtual const ACHAR *       primaryClientForMapFileCallback();
-    virtual bool                setMapFlag(bool setIt);
+                                                bool asPrimary  = false);		// 144//90h
+    virtual const ACHAR *       primaryClientForMapFileCallback();				// 152//98h
+    virtual bool                setMapFlag(bool setIt);							// 160//A0h
     virtual Acad::ErrorStatus   getRegisteredFileMapClients(
-                                            AcArray<const ACHAR *>& clients);
+                                            AcArray<const ACHAR *>& clients);	// 168//A8h
     virtual Acad::ErrorStatus   registerMapFileNotification(const ACHAR * appName, 
                                                 MAPFILENOTIFYPROC,
-                                                bool unRegister = false);
+                                                bool unRegister = false);		// 176//B0h
 
     // When a fatal error is encountered this function may be called
     // to notify you.
     //
-    virtual void fatalError(const ACHAR *format, ...);
+    virtual void fatalError(const ACHAR *format, ...);							// 184//B8h
 
     // Called when an unhandled exception occurs in an arx command or message.
     // The EXCEPTION_POINTERS pointer is obtained from the win32 api:
     // GetExceptionInformation().
     //
     virtual void reportUnhandledArxException(const _EXCEPTION_POINTERS *pExcPtrs,
-                                             const ACHAR *pAppName);
+                                             const ACHAR *pAppName);			// 192//C0h
 
     // The equivalent of ads_usrbrk()
     //
-    virtual Adesk::Boolean userBreak(bool updCtrlsWhenEnteringIdle = true) const;
+    virtual Adesk::Boolean userBreak(bool updCtrlsWhenEnteringIdle = true) const;	// 200//C8h
 
-    virtual void displayChar(ACHAR c) const;
-    virtual void displayString(const ACHAR* string, int count) const;
+    virtual void displayChar(ACHAR c) const;									// 208//D0h
+    virtual void displayString(const ACHAR* string, int count) const;			// 216//D8h
 
     // This function will be called to check if the application
     // wants to show text messages. Default implementation is always 
     // returning true;
-    virtual Adesk::Boolean readyToDisplayMessages();
+    virtual Adesk::Boolean readyToDisplayMessages();							// 224//E0h
 
     // This function can be used to used to programmatically change the
     // state of readyToDisplayMessages.  
-    virtual void enableMessageDisplay(Adesk::Boolean);
+    virtual void enableMessageDisplay(Adesk::Boolean);							// 232//E8h
 
     // Instructs the system to run fulltime CRC checking on database
     // filing operations.
-    virtual Adesk::Boolean doFullCRCCheck();
+    virtual Adesk::Boolean doFullCRCCheck();									// 240//F0h
 
     // Indicates where temporary files are to be located.  See WINSDK 
     // function GetTempPath() for details on the argument and the return
     // value.
     virtual unsigned int getTempPath(Adesk::UInt32 lBufferSize, 
-                                                ACHAR* pcBuffer);
+                                                ACHAR* pcBuffer);				// 248//F8h
 
     // gets the value of a command switch, or an environment variable, or
     // registry entry (the search is in that order).  This is the same
     // behavior as the LISP (getenv) function).  Default implementation
     // is to return NULL.
     //
-    virtual const ACHAR* getEnv(const ACHAR * var);
+    virtual const ACHAR* getEnv(const ACHAR * var);								// 256//100h
 
     // Whenever AcDb.dll needs to instantiate a progress meter, it will
     // call this method.
@@ -275,7 +275,7 @@ public:
     // AcDbHostApplicationProgressMeter, and override this method to
     // to return a progress meter of your derived type.
     //
-    virtual AcDbHostApplicationProgressMeter* newProgressMeter();
+    virtual AcDbHostApplicationProgressMeter* newProgressMeter();				// 264//108h
 
     // In other cases, AcDb.dll expects to make use of one global
     // instance of a progress meter that is always available.  To
@@ -283,9 +283,9 @@ public:
     // your meter and pass it to the following function.
     void setWorkingProgressMeter(AcDbHostApplicationProgressMeter* pNewMeter);
 
-    virtual AcDbAbstractClipBoundaryDefinition* newClipBoundaryRectangular();
-    virtual AcDbAbstractClipBoundaryDefinition* newClipBoundaryPolygonal();
-    virtual ClipBoundaryArray* newClipBoundaryArray();
+    virtual AcDbAbstractClipBoundaryDefinition* newClipBoundaryRectangular();	// 272//110h
+    virtual AcDbAbstractClipBoundaryDefinition* newClipBoundaryPolygonal();		// 280//118h
+    virtual ClipBoundaryArray* newClipBoundaryArray();							// 288//120h
 
     // Should point to a viable database.  The application is free to
     // reset this according to its need.  Some entites will require
@@ -295,41 +295,41 @@ public:
     AcDbDatabase* workingDatabase() const;
     void setWorkingDatabase(AcDbDatabase* pDatabase);
 
-    virtual AcDbUndoController* defaultUndoController();
+    virtual AcDbUndoController* defaultUndoController();						// 296//128h
     void setDefaultUndoController(AcDbUndoController* pUndoCtrl);
 
-    virtual AcDbTransactionManager* workingTransactionManager();
+    virtual AcDbTransactionManager* workingTransactionManager();				// 304//130h
     void setWorkingTransactionManager(AcDbTransactionManager* pTM);
 
-    virtual AcDbGlobals * createWorkingGlobals();
+    virtual AcDbGlobals * createWorkingGlobals();								// 312//138h
     AcDbGlobals * workingGlobals() const;
     void setWorkingGlobals(AcDbGlobals* pGlobals);
     
     AcDbAppSystemVariables * workingAppSysvars() const;
     void setWorkingAppSysvars(AcDbAppSystemVariables* pSysvars);
 
-    virtual const ACHAR * program ();
-    virtual const ACHAR * product ();
-    virtual const ACHAR * companyName();
-    virtual const ProdIdCode prodcode();
-    virtual const ACHAR * releaseMajorMinorString();
-    virtual int   releaseMajorVersion();
-    virtual int   releaseMinorVersion();
-    virtual const ACHAR * versionString();
-    ACDB_PORT virtual const ACHAR * getMachineRegistryProductRootKey ();
-    ACDB_PORT virtual const ACHAR * getUserRegistryProductRootKey ();
-    virtual const ACHAR* releaseMarketVersion();
-    virtual LCID  getRegistryProductLCID() ;
-    virtual bool  supportsMultiRedo() const { return false; }
+    virtual const ACHAR * program ();											// 320//140h
+    virtual const ACHAR * product ();											// 328//148h
+    virtual const ACHAR * companyName();										// 336//150h
+    virtual const ProdIdCode prodcode();										// 344//158h
+    virtual const ACHAR * releaseMajorMinorString();							// 352//160h
+    virtual int   releaseMajorVersion();										// 360//168h
+    virtual int   releaseMinorVersion();										// 368//170h
+    virtual const ACHAR * versionString();										// 376//178h
+    ACDB_PORT virtual const ACHAR * getMachineRegistryProductRootKey ();		// 384//180h
+    ACDB_PORT virtual const ACHAR * getUserRegistryProductRootKey ();			// 392//188h
+    virtual const ACHAR* releaseMarketVersion();								// 400//190h
+    virtual LCID  getRegistryProductLCID() ;									// 408//198h
+    virtual bool  supportsMultiRedo() const { return false; }					// 416//1A0h
     enum ModelerFlavor {kModelerFull=0, kModelerRegionsOnly=1, kModelerObjectsOnly=2};
-    virtual ModelerFlavor  getModelerFlavor() const { return AcDbHostApplicationServices::kModelerFull; }
+    virtual ModelerFlavor  getModelerFlavor() const { return AcDbHostApplicationServices::kModelerFull; }	// 424//1A8h
 
     code_page_id getSystemCodePage() const;
 
     // Deprecated: do not use this function!
     void setSystemCodePage(code_page_id);
 
-    virtual AcadInternalServices* acadInternalServices();
+    virtual AcadInternalServices* acadInternalServices();						// 432//1B0h
 
     void * acadInternalGetvar (const ACHAR *name);
 
@@ -337,14 +337,14 @@ public:
 
     // Determine whether a given string ('pszURL') is a valid URL.
     //
-    virtual Adesk::Boolean isURL(const ACHAR * pszURL) const;
+    virtual Adesk::Boolean isURL(const ACHAR * pszURL) const;					// 440//1B8h
 
     // 'isRemoteFile()' is the inverse of 'isURL()'--it provides a mapping
     // from a local file to the corresponding URL that the file was down-
     // loaded from. The URL, if any, is returned via 'pszURL.'
     //
     virtual Adesk::Boolean isRemoteFile(const ACHAR * pszLocalFile,
-                                          ACHAR * pszURL) const;
+                                          ACHAR * pszURL) const;				// 448//1C0h
 
     // Download a resource (file) identified by the URL 'pszURL' to a local
     // file, and return its name in the buffer pointed to by 'pszLocalFile.' 
@@ -353,7 +353,7 @@ public:
     // session.
     //
     virtual Acad::ErrorStatus getRemoteFile(const ACHAR * pszURL,
-     ACHAR * pszLocalFile, Adesk::Boolean bIgnoreCache = Adesk::kFalse) const;
+     ACHAR * pszLocalFile, Adesk::Boolean bIgnoreCache = Adesk::kFalse) const;	// 456//1C8h
 
     // Upload a local resource (file) identified by the pathname 'pszLocalFile'
     // to the remote location specified by the URL 'pszURL.'

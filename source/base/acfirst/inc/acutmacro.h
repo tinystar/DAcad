@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <malloc.h>
+#include "AdAChar.h"
 
 #define AC_ASSERT(expr)					assert(expr)
 
@@ -37,5 +38,7 @@
 			pointer = NULL;									\
 		}													\
 	} while (0)
+
+#define AC_COUNT_OF(array)				(sizeof(array) / sizeof(array[0]))
 
 #endif
