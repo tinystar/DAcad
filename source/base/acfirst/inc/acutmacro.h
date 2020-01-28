@@ -5,7 +5,7 @@
 #include <malloc.h>
 #include "AdAChar.h"
 
-#define AC_ASSERT(expr)					assert(expr)
+#define AC_ASSERT(expr)					/*assert(expr)*/
 
 #define AC_ASSERT_NOT_IMPLEMENTED()							\
 	do{														\

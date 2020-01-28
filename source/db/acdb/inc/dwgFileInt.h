@@ -27,9 +27,9 @@ public:
 	virtual const ACHAR* getComment(void) = 0;				// 104//68h
 	virtual bool isValid(void) = 0;							// 112//70h
 	virtual Acad::ErrorStatus getError(void) = 0;			// 120//78h
-	virtual Acad::ErrorStatus getFileTime(_FILETIME*, _FILETIME*, _FILETIME*) = 0;		// 128//80h
-	virtual int getAccessMode(void) = 0;					// 136//88h
-	virtual int getShareMode(void) = 0;						// 144//90h
+	virtual Acad::ErrorStatus getFileTime(FILETIME*, FILETIME*, FILETIME*) = 0;		// 128//80h
+	virtual unsigned int getAccessMode(void) = 0;			// 136//88h
+	virtual unsigned int getShareMode(void) = 0;			// 144//90h
 	virtual bool hasPassword(void) = 0;						// 152//98h
 	virtual bool hasSignature(void) = 0;					// 160//A0h
 	virtual bool needsRecovery(void) = 0;					// 168//A8h

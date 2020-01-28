@@ -10,6 +10,9 @@
     <Filter Include="sdk_inc">
       <UniqueIdentifier>{f75082d6-76a5-4079-aade-dc1b8ccd468c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="inc\lzo">
+      <UniqueIdentifier>{6887e842-dcf0-4fd1-99cc-6c43a39b6ea4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\sdk\dbmain.h">
@@ -90,6 +93,102 @@
     <ClInclude Include="inc\dbGlobals.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="inc\dwgFileInti.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dwgFileIntAcFs.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfs.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsi.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfs6.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsglobal.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsmheader.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsfheader.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\dbfiler.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbfastfiler.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsstream.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbfilerctrl.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsheap.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsglobalmem.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsistream.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzo_asm.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzo1.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzo1a.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzo1b.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzo1c.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzo1f.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzo1x.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzo1y.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzo1z.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzo2a.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzoconf.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzodefs.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzoutil.h">
+      <Filter>inc\lzo</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsmbheader.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfscmprheader.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsfstream.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsnode.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dbobji.cpp">
@@ -147,6 +246,48 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\dbGlobals.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dwgFileInti.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dwgFileIntAcFs.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\acfsi.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\acfs6.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\acfsglobal.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\acfsmheader.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\acfsfheader.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbfastfiler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbfiler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbfilerctrl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\acfsheap.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\acfsglobalmem.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\acfsistream.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\acfsfstream.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

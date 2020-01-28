@@ -50,6 +50,7 @@ protected:
 		AcDbStub*		_p8Stubs[32];
 	};
 
+	// 多维数组表示
 	struct StubSearchTreeNode
 	{
 		union

@@ -117,15 +117,15 @@ class ADESK_NO_VTABLE AcDbDwgFiler: public AcRxObject
     AcDbDwgFiler();
     virtual ~AcDbDwgFiler();
 
-    virtual  Acad::ErrorStatus filerStatus() const = 0;
-    virtual  AcDb::FilerType   filerType() const = 0;
-    virtual void               setFilerStatus(Acad::ErrorStatus) = 0;
-    virtual void               resetFilerStatus() = 0;
+    virtual  Acad::ErrorStatus filerStatus() const = 0;			// 64//40h
+    virtual  AcDb::FilerType   filerType() const = 0;			// 72//48h
+    virtual void               setFilerStatus(Acad::ErrorStatus) = 0;	// 80//50h
+    virtual void               resetFilerStatus() = 0;			// 88//58h
 
     // version of the drawing file being read or written by this filer
 
     virtual  Acad::ErrorStatus  dwgVersion(AcDb::AcDbDwgVersion &,
-                                AcDb::MaintenanceReleaseVersion &) const;
+                                AcDb::MaintenanceReleaseVersion &) const;	// 96//60h
 
     //        readXxx() and writeXxx() functions
     //

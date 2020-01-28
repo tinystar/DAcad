@@ -2,6 +2,7 @@
 #include "dbutil.h"
 #include "acutmacro.h"
 #include "dbdbi.h"
+#include "dwgFileIntAcFs.h"
 
 enum FileIntType
 {
@@ -74,10 +75,17 @@ DwgFileImpBase::DwgFileImpBase()
 	, m_maintVer2(AcDb::kMReleaseUnknown)
 	, m_dwgVer3(AcDb::kDHL_Unknown)
 	, m_maintVer3(AcDb::kMReleaseUnknown)
+	, m_AccessMode(0)
+	, m_ShareMode(0)
 	, m_bValid(false)
 	, m_bUnknown54(false)
 {
 	++smNumberOfOpenDwgFiles;
+}
+
+DwgFileImpBase::~DwgFileImpBase()
+{
+	--smNumberOfOpenDwgFiles;
 }
 
 bool DwgFileImpBase::isXRef(void)
@@ -126,16 +134,14 @@ bool DwgFileImpBase::isValid(void)
 	return false;
 }
 
-int DwgFileImpBase::getAccessMode(void)
+unsigned int DwgFileImpBase::getAccessMode(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return 0;
+	return m_AccessMode;
 }
 
-int DwgFileImpBase::getShareMode(void)
+unsigned int DwgFileImpBase::getShareMode(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return 0;
+	return m_ShareMode;
 }
 
 bool DwgFileImpBase::hasPassword(void)
@@ -312,7 +318,7 @@ DwgFileImpBase* DwgFileImpBase::openWithModes(const ACHAR* fileName,
 														hFile, 
 														desiredAccess, 
 														shareMode, 
-														(const ACHAR*)szHeader, 
+														szHeader, 
 														64, 
 														pUnkFunc, 
 														bUnkRet);				// 272
@@ -475,8 +481,7 @@ DwgFileImpBase* DwgFileImpBase::newDwgFileIntADP(void)
 
 DwgFileImpBase* DwgFileImpBase::newDwgFileIntAcFs(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return new DwgFileIntAcFs();
 }
 
 DwgFileImpBase* DwgFileImpBase::newDwgFileIntAFile(void)

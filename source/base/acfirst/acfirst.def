@@ -9,3 +9,6 @@ __acHeapMalloc
 __acHeapSize
 __acMallocAligned
 __acFreeAligned
+
+;---------------------------------------------------------------------
+acStrdup

@@ -298,6 +298,7 @@ HeapManager::~HeapManager()
 	MacSameSizePool::terminate();
 	sm_bInited = false;
 	LeaveCriticalSection(&criticalSection);
+	DeleteCriticalSection(&criticalSection);
 }
 
 HeapManager heapMgr;

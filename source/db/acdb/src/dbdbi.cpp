@@ -172,7 +172,7 @@ Acad::ErrorStatus AcDbImpDatabase::readDwgFile(const ACHAR* fileName, int shmode
 		return Acad::eInvalidInput;
 	}
 
-	m_pGlobals->m_bDbLoading = true;		// 3384// 1272
+	//m_pGlobals->m_bDbLoading = true;		// 3384// 1272
 
 	es = Acad::eNotImplementedYet;
 	DwgFileImpBase* pDwgFileBase = DwgFileImpBase::openWithModes(pszFileRead, desiredAccess, shareMode, false, false, es, NULL);

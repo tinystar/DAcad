@@ -1,0 +1,52 @@
+{
+ "labels": [
+  {
+   "module": "acdb19.dll",
+   "address": "0xE3B10",
+   "manual": true,
+   "text": "DwgFileImpBase::openWithModes"
+  },
+  {
+   "module": "acdb19.dll",
+   "address": "0xE40D0",
+   "manual": true,
+   "text": "DwgFileImpBase::readversion"
+  }
+ ],
+ "breakpoints": [
+  {
+   "address": "0xE3B10",
+   "enabled": true,
+   "oldbytes": "0x8948",
+   "type": 0,
+   "titantype": "0x0",
+   "name": "",
+   "module": "acdb19.dll",
+   "breakCondition": "",
+   "logText": "",
+   "logCondition": "",
+   "commandText": "",
+   "commandCondition": "",
+   "fastResume": false,
+   "silent": false
+  },
+  {
+   "address": "0xE40D0",
+   "enabled": true,
+   "oldbytes": "0x8B48",
+   "type": 0,
+   "titantype": "0x0",
+   "name": "",
+   "module": "acdb19.dll",
+   "breakCondition": "",
+   "logText": "",
+   "logCondition": "",
+   "commandText": "",
+   "commandCondition": "",
+   "fastResume": false,
+   "silent": false
+  }
+ ],
+ "hashAlgorithm": "murmurhash",
+ "hash": "0x824F6F69847BC9CE"
+}
