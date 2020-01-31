@@ -344,3 +344,8 @@ AcFs_mbheader* AcFs_mheader::ConvertID(int id)
 	else
 		return m_pUnk112[-id - 1];
 }
+
+void AcFs_mheader::FreeXlat(void)
+{
+	AC_ASSERT_NOT_IMPLEMENTED();
+}

@@ -3,6 +3,8 @@
 #include <windows.h>
 #include "acfsi.h"
 #include "acfsnode.h"
+#include "acfsheap.h"
+#include "acfsmheader.h"
 
 
 AcFsIStream::AcFsIStream(void)
@@ -154,8 +156,10 @@ void AcFsIStream::Reset(void)
 	m_pMHeader = NULL;
 	m_uFilePtr = 0;
 	m_uFileSize = 0;
+	m_pmnodeTable = NULL;
+	m_mnodeTblSize = 0;
 	m_nComprLevel = 1;
-	m_nUnk72 = 2;
+	m_nComprType = 2;
 	m_nStreamId = 0;
 	m_szStreamName[0] = 0;
 	m_uBlockSize = 29696;
@@ -172,15 +176,16 @@ void AcFsIStream::CopyFtoM(AcFsI* pAcFsI, AcFs_mheader* pmheader, AcFs_fstream* 
 	m_uFileSize = pfstream->m_nUnk0;
 	m_uBlockSize = pfstream->m_nUnk12;
 	m_nComprLevel = pfstream->m_nUnk16;
-	m_nUnk72 = pfstream->m_nUnk20;
+	m_nComprType = pfstream->m_nUnk20;
 	m_nStreamId = pfstream->m_nUnk24;
 	m_uAppFlags = pfstream->m_nUnk28;
 	pfstream->GetName(m_szStreamName);
 }
 
-void AcFsIStream::CopyFNtoMN(AcFs_fnode*, AcFs_mnode*)
+void AcFsIStream::CopyFNtoMN(AcFs_fnode* pfnode, AcFs_mnode* pmnode)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
+	pmnode->m_pMbHeader = m_pMHeader->ConvertID(pfnode->m_blkId);
+	pmnode->m_nUnk8 = pfnode->m_nUnk4;
 }
 
 int AcFsIStream::ReadNodes(char** ppBytes, int count)
@@ -213,19 +218,32 @@ int AcFsIStream::ReadNodes(char** ppBytes, int count)
 	return nRet;
 }
 
-AcFs_mnode* AcFsIStream::MapLinear(Adesk::Int64 unk64, int* pUnkInt)
+// 函数计算文件指针位置（nFilePos）在哪个块内，在pBlockOffset参数中返回在块内的偏移位置
+AcFs_mnode* AcFsIStream::MapLinear(Adesk::Int64 nFilePos, int* pBlockOffset)
 {
-	Adesk::Int64 u8 = unk64 / (m_uBlockSize << 8);
-	Adesk::Int64 u5 = unk64 - (m_uBlockSize << 8) * u8;
-	*pUnkInt = u5 - m_uBlockSize * (u5 / m_uBlockSize);
+	Adesk::Int64 blockIdx = nFilePos / m_uBlockSize;
+	Adesk::Int64 idx1 = blockIdx / 256;
+	Adesk::Int64 idx2 = blockIdx % 256;
+	*pBlockOffset = nFilePos - idx1 * m_uBlockSize * 256 - idx2 * m_uBlockSize;
 
-	if (u8 >= m_nUnk64)
+	if (idx1 >= m_mnodeTblSize)
 	{
-		v10 = malloc(8 * (m_nUnk64 + 256));
-		v11 = *((_DWORD *)this + 16);
-		v12 = v10;
-		v13 = *((_DWORD *)this + 16);
+		AcFs_mnode** pTable = (AcFs_mnode**)malloc((m_mnodeTblSize + 256) * sizeof(AcFs_mnode*));
+		for (Adesk::Int32 i = m_mnodeTblSize; i < m_mnodeTblSize + 256; ++i)
+			pTable[i] = NULL;
+		for (Adesk::Int32 i = 0; i < m_mnodeTblSize; ++i)
+			pTable[i] = m_pmnodeTable[i];
+		if (m_pmnodeTable)
+			free(m_pmnodeTable);
+		m_pmnodeTable = pTable;
+		m_mnodeTblSize += 256;
 	}
 
+	if (NULL == m_pmnodeTable[idx1])
+		m_pmnodeTable[idx1] = (AcFs_mnode*)m_pFsHeap->zalloc(sizeof(AcFs_mnode) * 256);
+	AcFs_mnode* pmnode = m_pmnodeTable[idx1] + idx2;
+	if (0 == pmnode->m_nStartPos)
+		pmnode->m_nStartPos = blockIdx * m_uBlockSize;
 
+	return pmnode;
 }

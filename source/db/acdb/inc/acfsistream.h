@@ -53,9 +53,10 @@ protected:
 	AcFs_mheader*		m_pMHeader;			// 32//20h
 	Adesk::UInt64		m_uFilePtr;			// 40//28h
 	Adesk::UInt64		m_uFileSize;		// 48//30h
-	Adesk::Int32		m_nUnk64;			// 64//40h
+	AcFs_mnode**		m_pmnodeTable;		// 56//38h
+	Adesk::Int32		m_mnodeTblSize;		// 64//40h
 	int					m_nComprLevel;		// 68//44h
-	int					m_nUnk72;			// 72//48h
+	int					m_nComprType;		// 72//48h
 	int					m_nStreamId;		// 76//4Ch
 	ACHAR				m_szStreamName[MAX_STREAM_NAME_LEN];	// 80//50h --> 336
 	Adesk::UInt32		m_uBlockSize;		// 336//150h

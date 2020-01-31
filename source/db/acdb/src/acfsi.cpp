@@ -11,6 +11,7 @@
 AcFsI::AcFsI()
 	: m_pMHeader(NULL)
 	, m_pFsHeap(NULL)
+	, m_pCallback(NULL)
 {
 	InitializeCriticalSection(&m_cs);
 }
@@ -131,7 +132,7 @@ void AcFsI::SetCompressionType(int nType)
 		if (nType <= 2)
 		{
 			m_nComprType = nType;
-			m_nUnk88 = nType;
+			m_stream1.m_nComprType = nType;
 		}
 	}
 }
@@ -158,7 +159,7 @@ void AcFsI::SetBlockSize(Adesk::UInt64 uSize)
 	if ((unsigned int)result <= 0xFFFF80 && (signed int)v2 >= m_nUnk568 && NULL == m_pMHeader)
 	{
 		m_uUnk560 = v2;
-		m_uUnk352 = v2;
+		m_stream1.m_uBlockSize = v2;
 	}
 }
 
@@ -167,8 +168,8 @@ void AcFsI::SetMaxCache(int nMaxCache)
 	if (nMaxCache < 0)
 		nMaxCache = 0;
 
-	m_nUnk456 = nMaxCache;
-	m_nUnk404 = nMaxCache;
+	m_nMaxCache = nMaxCache;
+	m_stream1.m_uMaxCache = nMaxCache;
 }
 
 void AcFsI::SetAlignment(int align)
@@ -282,9 +283,9 @@ int AcFsI::DeleteStream(const wchar_t*, unsigned int)
 	return -1;
 }
 
-void AcFsI::RegisterCallback(AcFsCallBack*)
+void AcFsI::RegisterCallback(AcFsCallBack* pCallback)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
+	m_pCallback = pCallback;
 }
 
 void AcFsI::DefineAppFlags(unsigned int, unsigned int)
@@ -340,50 +341,87 @@ int AcFsI::iCreateFile(const void* pFileName,
 					   HANDLE hFile, 
 					   Adesk::Int64 nPos)
 {
+	if (m_pMHeader != NULL)
+		return ERROR_BUSY;
+
+	lock();
+
+	m_pMHeader = new AcFs_mheader();
 	if (NULL == m_pMHeader)
 	{
-		lock();
+		unlock();
+		return ERROR_NOT_ENOUGH_MEMORY;
+	}
+	
+	m_pMHeader->m_pFsHeap = m_pFsHeap;		// 35 * 8 = 280
 
-		m_pMHeader = new AcFs_mheader();
-		if (m_pMHeader != NULL)
+	if (desiredAccess & GENERIC_WRITE)
+		desiredAccess |= GENERIC_READ;
+	m_uAccessMode = desiredAccess;
+	m_pMHeader->m_nUnk72 = m_nUnk568;
+	m_pMHeader->m_nUnk80 = m_nUnk572;
+	m_pMHeader->m_uUnk260 = ((m_uPrivtHdrSize + 127) / 128) << 7;
+
+	int nRet = m_pMHeader->OpenFile(pFileName, desiredAccess, shareMode, dwCreationDisposition, dwFlagsAndAttributes, bUnicode, hFile, nPos);
+	if (ERROR_SUCCESS == nRet)
+	{
+		m_nUnk568 = m_pMHeader->m_nUnk72;
+		m_nUnk572 = m_pMHeader->m_nUnk80;
+
+		int ret = processLogicalHeaders();
+		if (ERROR_SUCCESS == ret)
 		{
-			m_pMHeader->m_pFsHeap = m_pFsHeap;		// 35 * 8 = 280
-
-			if (desiredAccess & GENERIC_WRITE)
-				desiredAccess |= GENERIC_READ;
-			m_uAccessMode = desiredAccess;
-			m_pMHeader->m_nUnk72 = m_nUnk568;
-			m_pMHeader->m_nUnk80 = m_nUnk572;
-			m_pMHeader->m_uUnk260 = ((m_uPrivtHdrSize + 127) / 128) << 7;
-
-			int nRet = m_pMHeader->OpenFile(pFileName, desiredAccess, shareMode, dwCreationDisposition, dwFlagsAndAttributes, bUnicode, hFile, nPos);
-			if (0 == nRet)
+			if (m_pCallback)
 			{
-				m_nUnk568 = m_pMHeader->m_nUnk72;
-				m_nUnk572 = m_pMHeader->m_nUnk80;
-
-				processLogicalHeaders();
+				//if ()
+				AC_ASSERT_NOT_IMPLEMENTED();
 			}
 		}
-
-		unlock();
+		else
+		{
+			m_pMHeader->CloseFile();
+			DeleteMemory();
+		}
+	}
+	else
+	{
+		DeleteMemory();
 	}
 
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return 0;
+	unlock();
+
+	return nRet;
 }
 
 int AcFsI::processLogicalHeaders(void)
 {
-	return ReadHeader();
+	int ret = ReadHeader();
+	if (ERROR_SUCCESS == ret)
+	{
+		Adesk::UInt32 uBlockSize = m_stream1.m_uBlockSize;
+		AcFsIStream* pStream = m_stream1.m_pNextStream;
+		while (pStream)
+		{
+			if (uBlockSize < pStream->m_uBlockSize)
+				uBlockSize = pStream->m_uBlockSize;
+			pStream = pStream->m_pNextStream;
+		}
+		ret = CheckBlockSize(uBlockSize);
+	}
+	m_pMHeader->FreeXlat();
+	return ret;
 }
 
 int AcFsI::ReadHeader(void)
 {
-	int nRet = 0;
+	int nRet = ERROR_SUCCESS;
 	m_nUnk8 = 1;
-	//m_stream1
-	AC_ASSERT_NOT_IMPLEMENTED();
+	
+	m_stream1.m_uBlockSize = m_uUnk560;
+	m_stream1.m_pAcFsI = this;
+	m_stream1.m_uAcessType = m_uAccessMode;
+	m_stream1.m_uAppFlags = 0;
+	m_stream1.m_pMHeader = m_pMHeader;
 
 	AcFs_mbheader* pMBHeader = m_pMHeader->m_pUnk144;
 	if (NULL == pMBHeader)
@@ -463,7 +501,7 @@ int AcFsI::ReadHeader(void)
 			pLastStream->m_pNextStream = pIStream;
 		}
 
-		pIStream->SetMaxCache(m_nUnk456);
+		pIStream->SetMaxCache(m_nMaxCache);
 		pIStream->m_uAcessType = m_uAccessMode;
 		pIStream->CopyFtoM(this, m_pMHeader, pFStream);
 		pIStream->ReadNodes(&pBytes, pFStream->m_nUnk8);
@@ -473,4 +511,15 @@ int AcFsI::ReadHeader(void)
 
 	free(pDecomprData);
 	return nRet;
+}
+
+int AcFsI::CheckBlockSize(int)
+{
+	AC_ASSERT_NOT_IMPLEMENTED();
+	return 0;
+}
+
+void AcFsI::DeleteMemory(void)
+{
+	AC_ASSERT_NOT_IMPLEMENTED();
 }

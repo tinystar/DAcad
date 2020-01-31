@@ -25,8 +25,11 @@ public:
 	int ReadFileHeader(Adesk::Int64);
 	int ReadMemBlks(void);
 
-protected:
+public:
 	AcFs_mbheader* ConvertID(int);
+
+protected:
+	void FreeXlat(void);
 
 protected:
 	AcFs_mbheader*		m_pUnk0;		// 0//0h

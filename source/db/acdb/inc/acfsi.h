@@ -83,14 +83,32 @@ protected:
 	int processLogicalHeaders(void);
 	int ReadHeader(void);
 
+	int CheckBlockSize(int);
+
+	void DeleteMemory(void);
+
 protected:
 	Adesk::Int32		m_nUnk8;			// 8//8h
 	AcFsIStream			m_stream1;			// 16//10h
-	int					m_nUnk88;			// 88//58h
-	Adesk::UInt32		m_uUnk352;			// 352//160h
-	int					m_nUnk404;			// 404//194h
+// 		AcFsIStream*		m_pNextStream;		// 16 + 8 = 24
+// 		AcFsIStream*		m_pPrevStream;		// 16 + 16 = 32
+//		AcFsI*				m_pAcFsI;			// 16 + 24 = 40
+// 		AcFs_mheader*		m_pMHeader;			// 16 + 32 = 48
+// 		Adesk::UInt64		m_uFilePtr;			// 16 + 40 = 56
+// 		Adesk::UInt64		m_uFileSize;		// 16 + 48 = 64
+// 		AcFs_mnode**		m_pmnodeTable;		// 16 + 56 = 72
+// 		Adesk::Int32		m_mnodeTblSize;		// 16 + 64 = 80
+// 		int					m_nComprLevel;		// 16 + 68 = 84
+// 		int					m_nComprType;		// 16 + 72 = 88
+// 		int					m_nStreamId;		// 16 + 76 = 92
+// 		ACHAR				m_szStreamName[];	// 16 + 80 = 96
+// 		Adesk::UInt32		m_uBlockSize;		// 16 + 336 = 352
+// 		Adesk::UInt32		m_uAcessType;		// 16 + 384 = 400
+// 		Adesk::UInt32		m_uMaxCache;		// 16 + 388 = 404
+// 		Adesk::UInt32		m_uAppFlags;		// 16 + 408 = 424
+// 		AcFsHeap*			m_pFsHeap;			// 16 + 416 = 432
 	AcFs_mheader*		m_pMHeader;			// 448//1C0h
-	int					m_nUnk456;			// 456//1C8h
+	int					m_nMaxCache;		// 456//1C8h
 	Adesk::UInt32		m_uUnk560;			// 560//230h
 	int					m_nComprType;		// 564//234h
 	Adesk::Int32		m_nUnk568;			// 568//238h
@@ -98,6 +116,7 @@ protected:
 	Adesk::UInt32		m_uAccessMode;		// 576//240h
 	Adesk::UInt32		m_uPrivtHdrSize;	// 580//244h
 	CRITICAL_SECTION	m_cs;				// 592//250h
+	AcFsCallBack*		m_pCallback;		// 656//290h
 	Adesk::Int32		m_nUnk664;			// 664//298h
 	Adesk::Int32		m_nUnk668;			// 668//29Ch
 	AcFsHeap*			m_pFsHeap;			// 672//2A0h
