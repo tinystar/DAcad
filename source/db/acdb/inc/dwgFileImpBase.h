@@ -29,7 +29,7 @@ public:
 
 	virtual void setIsXRef(void);							// 240//F0h
 	virtual void setIsXRefTemp(const ACHAR*);				// 248//F8h
-	virtual int getDwgShareMode(void);						// 256//100h
+	virtual unsigned int getDwgShareMode(void);				// 256//100h
 
 	virtual Acad::ErrorStatus freeData(void**) = 0;			// 264//108h
 	virtual Acad::ErrorStatus initForReading(const ACHAR*,

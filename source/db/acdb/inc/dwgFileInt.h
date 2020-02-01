@@ -43,7 +43,7 @@ public:
 	virtual void reopenToDenyWrites(Acad::ErrorStatus&) = 0;	// 232//E8h
 	virtual void setIsXRef(void) = 0;							// 240//F0h
 	virtual void setIsXRefTemp(const ACHAR*) = 0;				// 248//F8h
-	virtual int getDwgShareMode(void) = 0;	// 返回值类型不确定	// 256//100h
+	virtual unsigned int getDwgShareMode(void) = 0;				// 256//100h
 
 public:
 	static Adesk::UInt32 numberOfOpenDwgFiles(void);

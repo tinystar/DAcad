@@ -152,7 +152,7 @@ void DwgFileIntAcFs::reopenToDenyWrites(Acad::ErrorStatus&)
 	AC_ASSERT_NOT_IMPLEMENTED();
 }
 
-int DwgFileIntAcFs::getDwgShareMode(void)
+unsigned int DwgFileIntAcFs::getDwgShareMode(void)
 {
 	AC_ASSERT_NOT_IMPLEMENTED();
 	return -1;
@@ -551,7 +551,7 @@ void DwgFileIntAcFs::freeDeadAcFs(void)
 	AC_ASSERT_NOT_IMPLEMENTED();
 }
 
-Acad::ErrorStatus DwgFileIntAcFs::verifyDwgShareMode(unsigned int, unsigned int)
+Acad::ErrorStatus DwgFileIntAcFs::verifyDwgShareMode(unsigned int desiredAccess, unsigned int shareMode)
 {
 	AC_ASSERT_NOT_IMPLEMENTED();
 	return Acad::eNotImplementedYet;

@@ -31,7 +31,7 @@ protected:
 	virtual void* getAFilePtr(void);					// 216//D8h
 	virtual void* getAcFsPtr(void);						// 224//E0h
 	virtual void reopenToDenyWrites(Acad::ErrorStatus&);	// 232//E8h
-	virtual int getDwgShareMode(void);					// 256//100h
+	virtual unsigned int getDwgShareMode(void);				// 256//100h
 
 	virtual Acad::ErrorStatus freeData(void**);			// 264//108h
 	virtual Acad::ErrorStatus initForReading(const ACHAR*,

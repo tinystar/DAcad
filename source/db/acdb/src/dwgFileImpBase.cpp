@@ -178,7 +178,7 @@ void DwgFileImpBase::setIsXRefTemp(const ACHAR*)
 	AC_ASSERT_NOT_IMPLEMENTED();
 }
 
-int DwgFileImpBase::getDwgShareMode(void)
+unsigned int DwgFileImpBase::getDwgShareMode(void)
 {
 	AC_ASSERT_NOT_IMPLEMENTED();
 	return 0;
