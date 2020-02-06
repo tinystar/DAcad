@@ -3,6 +3,7 @@
 #include "acutmacro.h"
 #include "dbdbi.h"
 #include "dwgFileIntAcFs.h"
+#include "rxcommon.h"
 
 enum FileIntType
 {
@@ -78,7 +79,12 @@ DwgFileImpBase::DwgFileImpBase()
 	, m_AccessMode(0)
 	, m_ShareMode(0)
 	, m_bValid(false)
+	, m_bIsXrefTmp(false)
 	, m_bUnknown54(false)
+	, m_pOrgXRefName(NULL)
+	, m_bIsXref(false)
+	, m_bUnk65(false)
+	, m_pszFile(NULL)
 {
 	++smNumberOfOpenDwgFiles;
 }
@@ -90,20 +96,17 @@ DwgFileImpBase::~DwgFileImpBase()
 
 bool DwgFileImpBase::isXRef(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return false;
+	return m_bIsXref;
 }
 
 bool DwgFileImpBase::isXRefTemp(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return false;
+	return m_bIsXrefTmp;
 }
 
 const ACHAR* DwgFileImpBase::getOriginalXRefName(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	return m_pOrgXRefName;
 }
 
 AcDbDatabase* DwgFileImpBase::getDatabase(void)
@@ -130,8 +133,7 @@ Acad::ErrorStatus DwgFileImpBase::getDwgVersion(AcDb::AcDbDwgVersion& ver, AcDb:
 
 bool DwgFileImpBase::isValid(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return false;
+	return m_bValid;
 }
 
 unsigned int DwgFileImpBase::getAccessMode(void)
@@ -146,54 +148,54 @@ unsigned int DwgFileImpBase::getShareMode(void)
 
 bool DwgFileImpBase::hasPassword(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
 	return false;
 }
 
 bool DwgFileImpBase::hasSignature(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
 	return false;
 }
 
 Acad::ErrorStatus DwgFileImpBase::testPassword(const SecurityParams&)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
 	return Acad::eNotImplementedYet;
 }
 
-Acad::ErrorStatus DwgFileImpBase::getSignature(const SignatureInfo*&)
+Acad::ErrorStatus DwgFileImpBase::getSignature(const SignatureInfo*& pInfo)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
+	pInfo = NULL;
 	return Acad::eNotImplementedYet;
 }
 
 void DwgFileImpBase::setIsXRef(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
+	m_bIsXref = true;
 }
 
-void DwgFileImpBase::setIsXRefTemp(const ACHAR*)
+void DwgFileImpBase::setIsXRefTemp(const ACHAR* pFileName)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
+	if (pFileName)
+	{
+		m_bIsXrefTmp = true;
+		m_pOrgXRefName = acStrdup(pFileName);
+	}
 }
 
 unsigned int DwgFileImpBase::getDwgShareMode(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return 0;
+	return 255;
 }
 
-Acad::ErrorStatus DwgFileImpBase::attachDb(AcDbImpDatabase*, bool)
+Acad::ErrorStatus DwgFileImpBase::attachDb(AcDbImpDatabase* pDb, bool)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	m_pImpDb = pDb;
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus DwgFileImpBase::detachDb(AcDbImpDatabase*, bool, bool)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	m_pImpDb = NULL;
+	return Acad::eOk;
 }
 
 DwgFileImpBase* DwgFileImpBase::openWithModes(const ACHAR* fileName,
@@ -473,25 +475,35 @@ int DwgFileImpBase::readversion(const AC_BYTE* szHeader,	// rdi
 	return ver1 > AcDb::kDHL_1800a ? eAcFs : eAFile;
 }
 
-DwgFileImpBase* DwgFileImpBase::newDwgFileIntADP(void)
+DwgFileIntImp* DwgFileImpBase::newDwgFileIntADP(void)
 {
 	AC_ASSERT_NOT_IMPLEMENTED();
 	return NULL;
 }
 
-DwgFileImpBase* DwgFileImpBase::newDwgFileIntAcFs(void)
+DwgFileIntImp* DwgFileImpBase::newDwgFileIntAcFs(void)
 {
 	return new DwgFileIntAcFs();
 }
 
-DwgFileImpBase* DwgFileImpBase::newDwgFileIntAFile(void)
+DwgFileIntImp* DwgFileImpBase::newDwgFileIntAFile(void)
 {
 	AC_ASSERT_NOT_IMPLEMENTED();
 	return NULL;
 }
 
-DwgFileImpBase* DwgFileImpBase::newDwgFileIntAFileR12(void)
+DwgFileIntImp* DwgFileImpBase::newDwgFileIntAFileR12(void)
 {
 	AC_ASSERT_NOT_IMPLEMENTED();
 	return NULL;
+}
+
+void DwgFileImpBase::subCloseFile(void)
+{
+	if (m_pszFile != NULL)
+	{
+		DeleteFile(m_pszFile);
+		free((void*)m_pszFile);
+		m_pszFile = NULL;
+	}
 }

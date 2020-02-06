@@ -100,6 +100,12 @@ public:
 
 	virtual AcDbAuditInfo *     getAuditInfo() const;
 
+public:
+	DwgFileIntImp* getDwgFileInt() const { return m_pDwgFileInt; }
+
+protected:
+	Acad::ErrorStatus readwithCRC(void* pBytes, Adesk::UInt64 uBytes);
+
 protected:
 	DwgFileIntImp*			m_pDwgFileInt;		// 16
 	Acad::ErrorStatus		m_filerStatus;		// 24

@@ -15,10 +15,7 @@ AcFs* AcFsNewClass()
 {
 	AcFsHeap* pHeap = GetAcFsHeap();
 
-	AcFsI* pAcFs = new AcFsI();
-	if (pAcFs != NULL)
-		pAcFs->m_pFsHeap = pHeap;
-
+	AcFsI* pAcFs = new AcFsI(pHeap);
 	return pAcFs;
 }
 
@@ -41,4 +38,16 @@ int iFileSeek(HANDLE hFile, Adesk::Int64 nPos)
 AcFsHeap* GetAcFsHeap(void)
 {
 	return globalMemory.GetHeap();
+}
+
+void AcFsDeleteClass(AcFs* pAcFs)
+{
+	if (pAcFs)
+		delete pAcFs;
+}
+
+void AcFs6DeleteClass(AcFs* pAcFs)
+{
+	if (pAcFs)
+		delete pAcFs;
 }

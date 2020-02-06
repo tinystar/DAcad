@@ -129,22 +129,22 @@ class ADESK_NO_VTABLE AcDbDwgFiler: public AcRxObject
 
     //        readXxx() and writeXxx() functions
     //
-    virtual Acad::ErrorStatus   readHardOwnershipId(AcDbHardOwnershipId*) = 0;
+    virtual Acad::ErrorStatus   readHardOwnershipId(AcDbHardOwnershipId*) = 0;	// 104//68h
     virtual Acad::ErrorStatus   writeHardOwnershipId(
-                                  const AcDbHardOwnershipId&) = 0;
+                                  const AcDbHardOwnershipId&) = 0;				// 112//70h
 
-    virtual Acad::ErrorStatus   readSoftOwnershipId(AcDbSoftOwnershipId*) = 0;
+    virtual Acad::ErrorStatus   readSoftOwnershipId(AcDbSoftOwnershipId*) = 0;	// 120//78h
     virtual Acad::ErrorStatus   writeSoftOwnershipId(
-                                  const AcDbSoftOwnershipId&) = 0;
+                                  const AcDbSoftOwnershipId&) = 0;				// 128//80h
 
-    virtual Acad::ErrorStatus   readHardPointerId(AcDbHardPointerId*) = 0;
-    virtual Acad::ErrorStatus   writeHardPointerId(const AcDbHardPointerId&) = 0;
+    virtual Acad::ErrorStatus   readHardPointerId(AcDbHardPointerId*) = 0;		// 136//88h
+    virtual Acad::ErrorStatus   writeHardPointerId(const AcDbHardPointerId&) = 0;	// 144//90h
 
-    virtual Acad::ErrorStatus   readSoftPointerId(AcDbSoftPointerId*) = 0;
-    virtual Acad::ErrorStatus   writeSoftPointerId(const AcDbSoftPointerId&) = 0;
+    virtual Acad::ErrorStatus   readSoftPointerId(AcDbSoftPointerId*) = 0;		// 152//98h
+    virtual Acad::ErrorStatus   writeSoftPointerId(const AcDbSoftPointerId&) = 0;	// 160//A0h
 
-    virtual Acad::ErrorStatus   readInt8(Adesk::Int8 *) = 0;
-    virtual Acad::ErrorStatus   writeInt8(Adesk::Int8 ) = 0;
+    virtual Acad::ErrorStatus   readInt8(Adesk::Int8 *) = 0;					// 168//A8h
+    virtual Acad::ErrorStatus   writeInt8(Adesk::Int8 ) = 0;					// 176//B0h
 
     // These are to be removed in a future release.  Please use
     // readInt8 or writeInt8 instead.
@@ -158,68 +158,68 @@ class ADESK_NO_VTABLE AcDbDwgFiler: public AcRxObject
     // Note: use of readString(ACHAR **) is discouraged, because
     // caller has to free the returned string.  It may be phased
     // out in a future release.
-    virtual Acad::ErrorStatus   readString(ACHAR **) = 0;
-    virtual Acad::ErrorStatus   writeString(const ACHAR *) = 0;
+    virtual Acad::ErrorStatus   readString(ACHAR **) = 0;						// 184//B8h
+    virtual Acad::ErrorStatus   writeString(const ACHAR *) = 0;					// 192//C0h
 
-    virtual Acad::ErrorStatus   readString(AcString &) = 0;
-    virtual Acad::ErrorStatus   writeString(const AcString &) = 0;
+    virtual Acad::ErrorStatus   readString(AcString &) = 0;						// 200//C8h
+    virtual Acad::ErrorStatus   writeString(const AcString &) = 0;				// 208//D0h
 
-    virtual Acad::ErrorStatus   readBChunk(ads_binary *) = 0;
-    virtual Acad::ErrorStatus   writeBChunk(const ads_binary&) = 0;
+    virtual Acad::ErrorStatus   readBChunk(ads_binary *) = 0;					// 216//D8h
+    virtual Acad::ErrorStatus   writeBChunk(const ads_binary&) = 0;				// 224//E0h
 
-    virtual Acad::ErrorStatus   readAcDbHandle(AcDbHandle*) = 0;
-    virtual Acad::ErrorStatus   writeAcDbHandle(const AcDbHandle&) = 0;
+    virtual Acad::ErrorStatus   readAcDbHandle(AcDbHandle*) = 0;				// 232//E8h
+    virtual Acad::ErrorStatus   writeAcDbHandle(const AcDbHandle&) = 0;			// 240//F0h
 
-    virtual Acad::ErrorStatus   readInt64(Adesk::Int64*) = 0;
-    virtual Acad::ErrorStatus   writeInt64(Adesk::Int64) = 0;
+    virtual Acad::ErrorStatus   readInt64(Adesk::Int64*) = 0;					// 248//F8h
+    virtual Acad::ErrorStatus   writeInt64(Adesk::Int64) = 0;					// 256//100h
 
-    virtual Acad::ErrorStatus   readInt32(Adesk::Int32*) = 0;
-    virtual Acad::ErrorStatus   writeInt32(Adesk::Int32) = 0;
+    virtual Acad::ErrorStatus   readInt32(Adesk::Int32*) = 0;					// 264//108h
+    virtual Acad::ErrorStatus   writeInt32(Adesk::Int32) = 0;					// 272//110h
 
-    virtual Acad::ErrorStatus   readInt16(Adesk::Int16*) = 0;
-    virtual Acad::ErrorStatus   writeInt16(Adesk::Int16) = 0;
+    virtual Acad::ErrorStatus   readInt16(Adesk::Int16*) = 0;					// 280//118h
+    virtual Acad::ErrorStatus   writeInt16(Adesk::Int16) = 0;					// 288//120h
 
-    virtual Acad::ErrorStatus   readUInt64(Adesk::UInt64*) = 0;
-    virtual Acad::ErrorStatus   writeUInt64(Adesk::UInt64) = 0;
+    virtual Acad::ErrorStatus   readUInt64(Adesk::UInt64*) = 0;					// 296//128h
+    virtual Acad::ErrorStatus   writeUInt64(Adesk::UInt64) = 0;					// 304//130h
 
-    virtual Acad::ErrorStatus   readUInt32(Adesk::UInt32*) = 0;
-    virtual Acad::ErrorStatus   writeUInt32(Adesk::UInt32) = 0;
+    virtual Acad::ErrorStatus   readUInt32(Adesk::UInt32*) = 0;					// 312//138h
+    virtual Acad::ErrorStatus   writeUInt32(Adesk::UInt32) = 0;					// 320//140h
 
-    virtual Acad::ErrorStatus   readUInt16(Adesk::UInt16*) = 0;
-    virtual Acad::ErrorStatus   writeUInt16(Adesk::UInt16) = 0;
+    virtual Acad::ErrorStatus   readUInt16(Adesk::UInt16*) = 0;					// 328//148h
+    virtual Acad::ErrorStatus   writeUInt16(Adesk::UInt16) = 0;					// 336//150h
 
-    virtual Acad::ErrorStatus   readUInt8(Adesk::UInt8*) = 0;
-    virtual Acad::ErrorStatus   writeUInt8(Adesk::UInt8) = 0;
+    virtual Acad::ErrorStatus   readUInt8(Adesk::UInt8*) = 0;					// 344//158h
+    virtual Acad::ErrorStatus   writeUInt8(Adesk::UInt8) = 0;					// 352//160h
 
-    virtual Acad::ErrorStatus   readBoolean(Adesk::Boolean*) = 0;
-    virtual Acad::ErrorStatus   writeBoolean(Adesk::Boolean) = 0;
+    virtual Acad::ErrorStatus   readBoolean(Adesk::Boolean*) = 0;				// 360//168h
+    virtual Acad::ErrorStatus   writeBoolean(Adesk::Boolean) = 0;				// 368//170h
 
-    virtual Acad::ErrorStatus   readBool(bool*) = 0;
-    virtual Acad::ErrorStatus   writeBool(bool) = 0;
+    virtual Acad::ErrorStatus   readBool(bool*) = 0;							// 376//178h
+    virtual Acad::ErrorStatus   writeBool(bool) = 0;							// 384//180h
 
-    virtual Acad::ErrorStatus   readDouble(double*) = 0;
-    virtual Acad::ErrorStatus   writeDouble(double) = 0;
+    virtual Acad::ErrorStatus   readDouble(double*) = 0;						// 392//188h
+    virtual Acad::ErrorStatus   writeDouble(double) = 0;						// 400//190h
 
-    virtual Acad::ErrorStatus   readPoint2d(AcGePoint2d*) = 0;
-    virtual Acad::ErrorStatus   writePoint2d(const AcGePoint2d&) = 0;
+    virtual Acad::ErrorStatus   readPoint2d(AcGePoint2d*) = 0;					// 408//198h
+    virtual Acad::ErrorStatus   writePoint2d(const AcGePoint2d&) = 0;			// 416//1A0h
 
-    virtual Acad::ErrorStatus   readPoint3d(AcGePoint3d*) = 0;
-    virtual Acad::ErrorStatus   writePoint3d(const AcGePoint3d&) = 0;
+    virtual Acad::ErrorStatus   readPoint3d(AcGePoint3d*) = 0;					// 424//1A8h
+    virtual Acad::ErrorStatus   writePoint3d(const AcGePoint3d&) = 0;			// 432//1B0h
 
-    virtual Acad::ErrorStatus   readVector2d(AcGeVector2d*) = 0;
-    virtual Acad::ErrorStatus   writeVector2d(const AcGeVector2d&) = 0;
+    virtual Acad::ErrorStatus   readVector2d(AcGeVector2d*) = 0;				// 440//1B8h
+    virtual Acad::ErrorStatus   writeVector2d(const AcGeVector2d&) = 0;			// 448//1C0h
 
-    virtual Acad::ErrorStatus   readVector3d(AcGeVector3d*) = 0;
-    virtual Acad::ErrorStatus   writeVector3d(const AcGeVector3d&) = 0;
+    virtual Acad::ErrorStatus   readVector3d(AcGeVector3d*) = 0;				// 456//1C8h
+    virtual Acad::ErrorStatus   writeVector3d(const AcGeVector3d&) = 0;			// 464//1D0h
 
-    virtual Acad::ErrorStatus   readScale3d(AcGeScale3d*) = 0;
-    virtual Acad::ErrorStatus   writeScale3d(const AcGeScale3d&) = 0;
+    virtual Acad::ErrorStatus   readScale3d(AcGeScale3d*) = 0;					// 472//1D8h
+    virtual Acad::ErrorStatus   writeScale3d(const AcGeScale3d&) = 0;			// 480//1E0h
 
-    virtual Acad::ErrorStatus   readBytes(void *, Adesk::UIntPtr) = 0;
-    virtual Acad::ErrorStatus   writeBytes(const void *, Adesk::UIntPtr) = 0;
+    virtual Acad::ErrorStatus   readBytes(void *, Adesk::UIntPtr) = 0;			// 488//1E8h
+    virtual Acad::ErrorStatus   writeBytes(const void *, Adesk::UIntPtr) = 0;	// 496//1F0h
 
-    virtual Acad::ErrorStatus   readAddress(void **);
-    virtual Acad::ErrorStatus   writeAddress(const void *);
+    virtual Acad::ErrorStatus   readAddress(void **);							// 504//1F8h
+    virtual Acad::ErrorStatus   writeAddress(const void *);						// 512//200h
 
     //        readItem() and writeItem() functions
     //
@@ -310,13 +310,13 @@ class ADESK_NO_VTABLE AcDbDwgFiler: public AcRxObject
             Acad::ErrorStatus   readItem(void **);
             Acad::ErrorStatus   writeItem(const void *);
 
-    virtual Acad::ErrorStatus   seek(Adesk::Int64 nOffset, int nMethod) = 0;
-    virtual Adesk::Int64        tell() const = 0;
-    virtual Acad::ErrorStatus   addReferences(AcDbIdRefQueue& /*qToAbsorb*/);
-    virtual              bool   usesReferences() const;
-    virtual AcDbAuditInfo *     getAuditInfo() const;
+    virtual Acad::ErrorStatus   seek(Adesk::Int64 nOffset, int nMethod) = 0;		// 520//208h
+    virtual Adesk::Int64        tell() const = 0;									// 528//210h
+    virtual Acad::ErrorStatus   addReferences(AcDbIdRefQueue& /*qToAbsorb*/);		// 536//218h
+    virtual              bool   usesReferences() const;								// 544//220h
+    virtual AcDbAuditInfo *     getAuditInfo() const;								// 552//228h
 
-    virtual AcDbFilerController& controller() const;
+    virtual AcDbFilerController& controller() const;								// 560//230h
 
 private:
             AcDbFilerController& mController;

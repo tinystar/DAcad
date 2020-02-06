@@ -2,8 +2,7 @@
 #define _ACFS_STREAM_H_
 
 #include "adesk.h"
-
-class AcFs_STREAMINFO_t;
+#include "acfsdefs.h"
 
 typedef void (*AcFsStreamCallBack)(void);
 
@@ -28,7 +27,7 @@ public:
 	virtual int GetStreamID(void) = 0;							// 120//78h
 	virtual int ScanPhysical(const void**, Adesk::UInt64*, Adesk::UInt64*) = 0;		// 128//80h
 	virtual int GetPhysicalAddr(Adesk::UInt64*) = 0;			// 136//88h
-	virtual void RegisterCallback(AcFsStreamCallBack*) = 0;		// 144//90h
+	virtual void RegisterCallback(AcFsStreamCallBack) = 0;		// 144//90h
 	virtual void DefineAppFlags(Adesk::UInt32, Adesk::UInt32) = 0;	// 152//98h
 	virtual Adesk::UInt32 GetAppFlags(void) = 0;				// 160//A0h
 	virtual void SetAccessType(Adesk::UInt32) = 0;				// 168//A8h

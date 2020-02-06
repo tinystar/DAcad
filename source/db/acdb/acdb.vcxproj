@@ -88,7 +88,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ACDB_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ACDB_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(AcadDir)source\base\acfirst\inc;$(AcadDir)3rdparty\lzo-2.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -105,7 +105,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ACDB_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ACDB_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(AcadDir)source\base\acfirst\inc;$(AcadDir)3rdparty\lzo-2.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -124,7 +124,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ACDB_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ACDB_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(AcadDir)source\base\acfirst\inc;$(AcadDir)3rdparty\lzo-2.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -145,7 +145,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ACDB_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ACDB_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(AcadDir)source\base\acfirst\inc;$(AcadDir)3rdparty\lzo-2.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -173,6 +173,7 @@
     <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzoutil.h" />
     <ClInclude Include="..\..\..\3rdparty\lzo-2.10\include\lzo\lzo_asm.h" />
     <ClInclude Include="..\..\..\sdk\acadstrc.h" />
+    <ClInclude Include="..\..\..\sdk\acdb.h" />
     <ClInclude Include="..\..\..\sdk\acdbport.h" />
     <ClInclude Include="..\..\..\sdk\acutmem.h" />
     <ClInclude Include="..\..\..\sdk\codepgid.h" />
@@ -188,10 +189,12 @@
     <ClInclude Include="inc\acfs.h" />
     <ClInclude Include="inc\acfs6.h" />
     <ClInclude Include="inc\acfscmprheader.h" />
+    <ClInclude Include="inc\acfsdefs.h" />
     <ClInclude Include="inc\acfsfheader.h" />
     <ClInclude Include="inc\acfsfstream.h" />
     <ClInclude Include="inc\acfsglobal.h" />
     <ClInclude Include="inc\acfsglobalmem.h" />
+    <ClInclude Include="inc\acfsbuff.h" />
     <ClInclude Include="inc\acfsheap.h" />
     <ClInclude Include="inc\acfsistream.h" />
     <ClInclude Include="inc\acfsmbheader.h" />
@@ -203,6 +206,7 @@
     <ClInclude Include="inc\dbDimVarDef.h" />
     <ClInclude Include="inc\dbfastfiler.h" />
     <ClInclude Include="inc\dbfilerctrl.h" />
+    <ClInclude Include="inc\dbGlobalFuncs.h" />
     <ClInclude Include="inc\dbGlobals.h" />
     <ClInclude Include="inc\dbHandleTable.h" />
     <ClInclude Include="inc\dbheader.h" />
@@ -213,13 +217,16 @@
     <ClInclude Include="inc\dbsymreci.h" />
     <ClInclude Include="inc\dbSysInternals.h" />
     <ClInclude Include="inc\dbutil.h" />
+    <ClInclude Include="inc\dwgFileHandle.h" />
     <ClInclude Include="inc\dwgFileImpBase.h" />
     <ClInclude Include="inc\dwgFileInt.h" />
     <ClInclude Include="inc\dwgFileIntAcFs.h" />
     <ClInclude Include="inc\dwgFileInti.h" />
+    <ClInclude Include="inc\dwgShareInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\acfs6.cpp" />
+    <ClCompile Include="src\acfsbuff.cpp" />
     <ClCompile Include="src\acfsfheader.cpp" />
     <ClCompile Include="src\acfsfstream.cpp" />
     <ClCompile Include="src\acfsglobal.cpp" />
@@ -236,6 +243,7 @@
     <ClCompile Include="src\dbfastfiler.cpp" />
     <ClCompile Include="src\dbfiler.cpp" />
     <ClCompile Include="src\dbfilerctrl.cpp" />
+    <ClCompile Include="src\dbGlobalFuncs.cpp" />
     <ClCompile Include="src\dbGlobals.cpp" />
     <ClCompile Include="src\dbHandleTable.cpp" />
     <ClCompile Include="src\dbheader.cpp" />
@@ -248,10 +256,12 @@
     <ClCompile Include="src\dbsymreci.cpp" />
     <ClCompile Include="src\dbSysInternals.cpp" />
     <ClCompile Include="src\dbutil.cpp" />
+    <ClCompile Include="src\dwgFileHandle.cpp" />
     <ClCompile Include="src\dwgFileImpBase.cpp" />
     <ClCompile Include="src\dwgFileInt.cpp" />
     <ClCompile Include="src\dwgFileIntAcFs.cpp" />
     <ClCompile Include="src\dwgFileInti.cpp" />
+    <ClCompile Include="src\dwgShareInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="acdb.def" />

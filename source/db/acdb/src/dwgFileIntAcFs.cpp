@@ -5,29 +5,33 @@
 #include "acfsglobal.h"
 #include "rxcommon.h"
 #include "acutmacro.h"
+#include "acfsdefs.h"
+#include "dwgShareInfo.h"
+#include "acfsstream.h"
+#include "dbGlobalFuncs.h"
 
 const ACHAR* pszRcvAcad = ACRX_T("RcvAcad");
 
-#define STREAM_OF_SEC(pSection)		((AcFsStream**)((char*)this + pSection->uStreamOffset))
+#define STREAM_OF_SEC(pSection)		((AcFsStream**)((char*)this + (pSection)->uStreamOffset))
 
 
-DwgFileIntAcFs::FileSection DwgFileIntAcFs::smDefaultStreams[] = {
-	{ ACRX_T("AcDb:Header"),			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pHdrStream,		0x00000007, 0x00000001, 0x0000000000000800 },
-	{ ACRX_T("AcDb:AuxHeader"),			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pAuxHdrStream,	0x00000007, 0x00000002, 0x0000000000000800 },
-	{ ACRX_T("AcDb:Classes"),			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pClsStream,		0x00000007, 0x00000003, 0x0000000000000000 },
-	{ ACRX_T("AcDb:Preview"),			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pPreviewStream,	0x00000000, 0x00000004, 0x0000000000000000 },
-	{ ACRX_T("AcDb:Handles"),			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pHdlStream,		0x00000007, 0x00000005, 0x0000000000000000 },
-	{ ACRX_T("AcDb:Template"),			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pTmplStream,		0x00000007, 0x00000006, 0x0000000000000040 },
-	{ ACRX_T("AcDb:ObjFreeSpace"),		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pObjFreeStream,	0x00000007, 0x00000007, 0x0000000000000000 },
-	{ ACRX_T("AcDb:AcDbObjects"),		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pObjsStream,		0x00000007, 0x00000008, 0x0000000000000000 },
-	{ ACRX_T("AcDb:ShareInfo"),			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pShInfoStream,	0x00000001, 0x00000009, 0x0000000000001000 },
-	{ ACRX_T("AcDb:FileDepList"),		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pFDepLstStream,	0x00000000, 0x0000000A, 0x0000000000000000 },
-	{ ACRX_T("AcDb:SummaryInfo"),		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pSmyInfoStream,	0x00000000, 0x0000000B, 0x0000000000000000 },
-	{ ACRX_T("AcDb:VBAProject"),		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pVBAPrjStream,	0x00000000, 0x0000000C, 0x0000000000000000 },
-	{ ACRX_T("AcDb:RevHistory"),		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pRevHstStream,	0x00000007, 0x0000000D, 0x0000000000001000 },
-	{ ACRX_T("AcDb:AppInfo"),			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pApInfoStream,	0x00000000, 0x0000000E, 0x0000000000000000 },
-	{ ACRX_T("AcDb:AppInfoHistory"),	(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pApInfHstStream,	0x00000000, 0x0000000F, 0x0000000000000000 },
-	{ ACRX_T("AcDb:AcDsPrototype_1b"),	(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pAcDsStream,		0x00000001, 0x00000010, 0x0000000000000000 },
+StreamDescriptor DwgFileIntAcFs::smDefaultStreams[] = {
+	{ ACFS_STREAM_HEADER,			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pHdrStream, 0x00000007, 0x00000001, 0x0000000000000800 },
+	{ ACFS_STREAM_AUXHEADER,		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pAuxHdrStream, 0x00000007, 0x00000002, 0x0000000000000800 },
+	{ ACFS_STREAM_CLASSES,			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pClsStream, 0x00000007, 0x00000003, 0x0000000000000000 },
+	{ ACFS_STREAM_PREVIEW,			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pPreviewStream, 0x00000000, 0x00000004, 0x0000000000000000 },
+	{ ACFS_STREAM_HANDLES,			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pHdlStream, 0x00000007, 0x00000005, 0x0000000000000000 },
+	{ ACFS_STREAM_TEMPLATE,			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pTmplStream, 0x00000007, 0x00000006, 0x0000000000000040 },
+	{ ACFS_STREAM_OBJFREESPACE,		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pObjFreeStream, 0x00000007, 0x00000007, 0x0000000000000000 },
+	{ ACFS_STREAM_ACDBOBJECTS,		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pObjsStream, 0x00000007, 0x00000008, 0x0000000000000000 },
+	{ ACFS_STREAM_SHAREINFO,		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pShInfoStream, 0x00000001, 0x00000009, 0x0000000000001000 },
+	{ ACFS_STREAM_FILEDEPLIST,		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pFDepLstStream, 0x00000000, 0x0000000A, 0x0000000000000000 },
+	{ ACFS_STREAM_SUMMARYINFO,		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pSmyInfoStream, 0x00000000, 0x0000000B, 0x0000000000000000 },
+	{ ACFS_STREAM_VBAPROJECT,		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pVBAPrjStream, 0x00000000, 0x0000000C, 0x0000000000000000 },
+	{ ACFS_STREAM_REVHISTORY,		(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pRevHstStream, 0x00000007, 0x0000000D, 0x0000000000001000 },
+	{ ACFS_STREAM_APPINFO,			(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pApInfoStream, 0x00000000, 0x0000000E, 0x0000000000000000 },
+	{ ACFS_STREAM_APPINFOHISTORY,	(Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pApInfHstStream, 0x00000000, 0x0000000F, 0x0000000000000000 },
+	{ ACFS_STREAM_ACDSPROTOTYPE_1B, (Adesk::ULongPtr)&((DwgFileIntAcFs*)0)->m_pAcDsStream, 0x00000001, 0x00000010, 0x0000000000000000 },
 	{ NULL, 0x0, 0x00000000, 0x00000000, 0x0000000000000000 },
 };
 
@@ -38,10 +42,14 @@ DwgFileIntAcFs::DwgFileIntAcFs()
 	, m_hTmpFile(NULL)
 	, m_pFileName(NULL)
 	, m_pTmpFile(NULL)
+	, m_nCurSection(-1)
+	, m_nUnk204(0)
+	, m_nUnk208(-1)
 	, m_uUnk212(4)
 	, m_uUnk232(0)
 	, m_uUnk236(0)
 	, m_bUnk256(false)
+	, m_bCrashSave(false)
 	, m_bUnk258(false)
 	, m_pCurFsStream(NULL)
 	, m_pHdrStream(NULL)
@@ -61,7 +69,7 @@ DwgFileIntAcFs::DwgFileIntAcFs()
 	, m_pApInfHstStream(NULL)
 	, m_pAcDsStream(NULL)
 {
-
+	AcDbFastDwgFiler::m_pDwgFileInt = this;
 }
 
 DwgFileIntAcFs::~DwgFileIntAcFs()
@@ -142,7 +150,7 @@ void* DwgFileIntAcFs::getAFilePtr(void)
 	return NULL;
 }
 
-void* DwgFileIntAcFs::getAcFsPtr(void)
+AcFs* DwgFileIntAcFs::getAcFsPtr(void)
 {
 	return m_pAcFs;
 }
@@ -154,14 +162,46 @@ void DwgFileIntAcFs::reopenToDenyWrites(Acad::ErrorStatus&)
 
 unsigned int DwgFileIntAcFs::getDwgShareMode(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	DwgShareInfo info;
+	unsigned int mode = 255;
+	if (Acad::eOk == info.read(this))
+		mode = info.getDwgShareMode();
+	return mode;
 }
 
-Acad::ErrorStatus DwgFileIntAcFs::freeData(void**)
+Acad::ErrorStatus DwgFileIntAcFs::freeData(HANDLE* pFileHandle)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	notifyAcDbDsDwgFilerBeingClosed(this, true);
+	int ret = m_pAcFs->CloseFile();
+	if (pFileHandle)
+	{
+		*pFileHandle = m_hFile;
+		m_hFile = NULL;
+	}
+	else if (m_hFile)
+	{
+		if (!CloseHandle(m_hFile))
+			ret = GetLastError();
+
+		m_hFile = NULL;
+	}
+
+	if (m_bIsXrefTmp)
+	{
+		DeleteFile(m_pFileName);
+	}
+	else if (m_hTmpFile)
+	{
+		closeAndDeleteTempRecoveryFile();
+	}
+
+	freeDeadAcFs();
+	acdbDelString(m_pFileName);
+
+	if (ret)
+		return DbUtil::win32ToAcadError(ret);
+	else
+		return Acad::eOk;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::initForReading(const ACHAR* fileName,
@@ -246,7 +286,7 @@ Acad::ErrorStatus DwgFileIntAcFs::initForReading(const ACHAR* fileName,
 		return es;
 	}
 
-	for (FileSection* pSection = smDefaultStreams; ; ++pSection)
+	for (StreamDescriptor* pSection = smDefaultStreams; ; ++pSection)
 	{
 		const ACHAR* pSecName = pSection->pSectionName;
 		if (NULL == pSecName)
@@ -292,20 +332,66 @@ Acad::ErrorStatus DwgFileIntAcFs::setCrashSave(void)
 	return Acad::eOk;
 }
 
-Acad::ErrorStatus DwgFileIntAcFs::openForWrite(const ACHAR*)
+Acad::ErrorStatus DwgFileIntAcFs::openForWrite(const ACHAR* pFileName)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	m_AccessMode = GENERIC_READ | GENERIC_WRITE;
+	m_ShareMode = 0;
+	setAcFsVer();
+	setupAcFs(m_pAcFs);
+	m_bUnk258 = true;
+	m_pFileName = acStrdup(pFileName);
+	SetLastError(0);
+	m_hFile = CreateFile(pFileName, GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	int errCode = 0;
+	if (m_hFile == INVALID_HANDLE_VALUE)
+	{
+		errCode = ERROR_OPEN_FAILED;
+		if (int err = GetLastError())
+			errCode = err;
+
+		m_hFile = NULL;
+		freeDeadAcFs();
+		acdbDelString(m_pFileName);
+		m_pCurFsStream = NULL;
+		return DbUtil::win32ToAcadError(errCode);
+	}
+
+	errCode = m_pAcFs->OpenUsing(m_hFile, GENERIC_READ | GENERIC_WRITE);
+	if (errCode)
+	{
+		CloseHandle(m_hFile);
+		m_hFile = NULL;
+		freeDeadAcFs();
+		acdbDelString(m_pFileName);
+		m_pCurFsStream = NULL;
+		return DbUtil::win32ToAcadError(errCode);
+	}
+
+	for (StreamDescriptor* pSection = smDefaultStreams; pSection->pSectionName; ++pSection)
+	{
+		if (pSection->uUnknown20 & 2)
+		{
+			int unk = pSection->uUnknown24;
+			if (m_uUnk212 < 6)
+				unk = 0;
+			errCode = createStream(pSection, unk);
+			if (errCode)
+				break;
+		}
+	}
+
+	m_pCurFsStream = NULL;
+	return DbUtil::win32ToAcadError(errCode);
 }
 
 Adesk::Int64 DwgFileIntAcFs::getObjectSectionSize(void)
 {
-	//m_pObjsStream		// 48
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return 0;
+	Adesk::UInt64 uSize = 0;
+	m_pObjsStream->GetFileSize(&uSize);		// 48
+	return uSize;
 }
 
-AcDbDwgFiler* DwgFileIntAcFs::fastDwgFiler(void)
+AcDbFastDwgFiler* DwgFileIntAcFs::fastDwgFiler(void)
 {
 	return this;
 }
@@ -326,22 +412,29 @@ void DwgFileIntAcFs::setPasswordInfo(unsigned int info)
 	m_uUnk232 = info;
 }
 
-Acad::ErrorStatus DwgFileIntAcFs::seekFile(Adesk::Int64, int)
+Acad::ErrorStatus DwgFileIntAcFs::seekFile(Adesk::Int64 offset, int method)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	int ret = m_pCurFsStream->SetFilePointer(offset, method);		// 16
+	if (ret)
+		return DbUtil::win32ToAcadError(ret);
+
+	return Acad::eOk;
 }
 
 Adesk::Int64 DwgFileIntAcFs::getFilePointer(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return NULL;
+	Adesk::UInt64 uPos;
+	m_pCurFsStream->GetFilePointer(&uPos);
+	return uPos;
 }
 
-Acad::ErrorStatus DwgFileIntAcFs::readBinaryBytes(void*, Adesk::UInt64)
+Adesk::UInt64 DwgFileIntAcFs::readBinaryBytes(void* pBytes, Adesk::UInt64 uBytes)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	if (NULL == m_pCurFsStream)
+		return 0;	// ACAD返回68，对应Acad::eNoInputFiler，应该是错误
+
+	m_pCurFsStream->ReadFile(pBytes, &uBytes);		// 8
+	return uBytes;
 }
 
 Adesk::UInt64 DwgFileIntAcFs::writeBinaryBytes(void const*, Adesk::UInt64)
@@ -356,16 +449,18 @@ Acad::ErrorStatus DwgFileIntAcFs::flushAndCheckForWriteErrors(void)
 	return Acad::eNotImplementedYet;
 }
 
-Acad::ErrorStatus DwgFileIntAcFs::startSectionRead(int)
+Acad::ErrorStatus DwgFileIntAcFs::startSectionRead(int sectionId)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	m_nCurSection = sectionId;
+	m_nUnk208 = 0;
+	return seekToSection(sectionId, 0);
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::endSectionRead(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	m_nCurSection = -1;
+	m_nUnk208 = -1;
+	return seekToSection(-1, 0);
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::startSectionSave(int)
@@ -399,14 +494,26 @@ void* DwgFileIntAcFs::getCurrentAcFsStream(void)
 
 Acad::ErrorStatus DwgFileIntAcFs::pushObjectSectionRead(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	if (0 == m_nUnk204)
+	{
+		m_nUnk208 = 0;
+		m_pCurFsStream = m_pObjsStream;
+		m_nCurSection = kSecObjects;
+	}
+	++m_nUnk204;
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::popObjectSectionRead(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	--m_nUnk204;
+	if (0 == m_nUnk204)
+	{
+		m_nCurSection = -1;
+		m_nUnk208 = -1;
+		m_pCurFsStream = NULL;
+	}
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::readVBASection(void*, unsigned int, unsigned int&, unsigned int&)
@@ -423,26 +530,30 @@ Acad::ErrorStatus DwgFileIntAcFs::writeVBASection(const void*, unsigned int, uns
 
 Acad::ErrorStatus DwgFileIntAcFs::switchFromHandleToObjectSection(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	m_nCurSection = kSecObjects;
+	m_pCurFsStream = m_pObjsStream;
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::returnFromObjectToHandleSection(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	m_nCurSection = kSecHandles;
+	m_pCurFsStream = m_pHdlStream;
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::switchFromHandleToFreeSpaceSection(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	m_nCurSection = KSecObjFreeSpace;
+	m_pCurFsStream = m_pObjFreeStream;
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::returnFromFreeSpaceToHandleSection(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	m_nCurSection = kSecHandles;
+	m_pCurFsStream = m_pHdlStream;
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::startAcDsSectionRead(SaveObjectReadState*&)
@@ -465,20 +576,31 @@ Acad::ErrorStatus DwgFileIntAcFs::prepareToWriteSections(void)
 
 Acad::ErrorStatus DwgFileIntAcFs::omitSection(int)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	return Acad::eOk;
 }
 
-bool DwgFileIntAcFs::sectionExists(int)
+bool DwgFileIntAcFs::sectionExists(int sectionId)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return false;
+	bool bExist = false;
+	if (sectionId > kSecNone && sectionId <= kSecMax)
+	{
+		AcFsStream** ppStream = STREAM_OF_SEC(&smDefaultStreams[sectionId - 1]);
+		AcFsStream* pStream = *ppStream;
+		if (NULL == pStream)
+		{
+			m_pAcFs->OpenStream(smDefaultStreams[sectionId - 1].pSectionName, 0, ppStream);		// 280
+			pStream = *ppStream;
+		}
+
+		bExist = pStream != NULL;
+	}
+
+	return bExist;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::getHdrHdr(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::saveHdrHdr(void)
@@ -499,22 +621,26 @@ Acad::ErrorStatus DwgFileIntAcFs::readUnknownSections(AcDbImpDatabase*)
 	return Acad::eNotImplementedYet;
 }
 
-Acad::ErrorStatus DwgFileIntAcFs::tryPassword(const wchar_t*, CIPHER*)
+Acad::ErrorStatus DwgFileIntAcFs::tryPassword(const wchar_t* password, CIPHER* cipher)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	return DwgFileIntImp::tryPassword(m_pAcFs, password, cipher);
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::flushBuffers(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	if (NULL == m_pAcFs)
+		return Acad::eNullObjectPointer;
+
+	int ret = m_pAcFs->Flush();
+	if (ret)
+		return DbUtil::win32ToAcadError(ret);
+
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::getAcADPPackage(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	return Acad::eOk;
 }
 
 int DwgFileIntAcFs::getCurrentSection(void)
@@ -548,16 +674,92 @@ void DwgFileIntAcFs::setupAcFs(AcFs*& pAcFs)
 
 void DwgFileIntAcFs::freeDeadAcFs(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
+	// 逆向的代码感觉存在错误
+	//AcDb::AcDbDwgVersion dwgVer;
+	//AcDb::MaintenanceReleaseVersion maintVer;
+	//getDwgVersion(dwgVer, maintVer);
+	//if (dwgVer > AcDb::kDHL_1800)
+	//	AcFs6DeleteClass(m_pAcFs);
+	//else
+	//	AcFsDeleteClass(m_pAcFs);
+	if (6 == m_uUnk212)
+		AcFs6DeleteClass(m_pAcFs);
+	else
+		AcFsDeleteClass(m_pAcFs);
+	m_pAcFs = NULL;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::verifyDwgShareMode(unsigned int desiredAccess, unsigned int shareMode)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	unsigned int uShareMode = getDwgShareMode();	// 256
+	if (!(desiredAccess & 0x40000000))
+	{
+		if (!(uShareMode & 1))
+		{
+			return (Acad::ErrorStatus)(((desiredAccess & 0x40000000) >> 30) + 501);
+		}
+	}
+	else if ((uShareMode & 3) != 3)
+	{
+		return (Acad::ErrorStatus)(((desiredAccess & 0x40000000) >> 30) + 501);
+	}
+
+	if (shareMode & 2)
+		return Acad::eOk;
+	else if (uShareMode & 4)
+		return Acad::eOk;
+	else
+		return Acad::eDwgShareDemandLoad;
 }
 
 void DwgFileIntAcFs::closeAndDeleteTempRecoveryFile(void)
 {
+	CloseHandle(m_hTmpFile);
+	m_hTmpFile = NULL;
+	if (m_pTmpFile)
+	{
+		DeleteFile(m_pTmpFile);
+		acdbDelString(m_pTmpFile);
+	}
+}
+
+Acad::ErrorStatus DwgFileIntAcFs::seekToSection(int sectionId, int createIfNotFound)
+{
+	if (-1 == sectionId)
+	{
+		m_pCurFsStream = NULL;
+		return Acad::eOk;
+	}
+
+	Acad::ErrorStatus es = Acad::eInvalidInput;
+	if (sectionId > kSecNone && sectionId <= kSecMax)
+	{
+		AcFsStream** ppStream = STREAM_OF_SEC(&smDefaultStreams[sectionId - 1]);
+		AcFsStream* pStream = *ppStream;
+		if (NULL == pStream && 1 == createIfNotFound)
+		{
+			long createmask = 0x10F7;
+			if (!BitTest(&createmask, sectionId - 1))
+			{
+				createStream(&smDefaultStreams[sectionId - 1], smDefaultStreams[sectionId - 1].uUnknown24);
+				ppStream = STREAM_OF_SEC(&smDefaultStreams[sectionId - 1]);
+				pStream = *ppStream;
+			}
+		}
+
+		if (pStream)
+		{
+			m_pCurFsStream = pStream;
+			es = Acad::eOk;
+			pStream->SetFilePointer(0, 0);		// 16
+		}
+	}
+
+	return es;
+}
+
+int DwgFileIntAcFs::createStream(const StreamDescriptor* pDescriptor, int)
+{
 	AC_ASSERT_NOT_IMPLEMENTED();
+	return -1;
 }

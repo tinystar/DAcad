@@ -7,6 +7,16 @@
 class AcFs;
 class AcFsStream;
 
+struct StreamDescriptor
+{
+	const ACHAR*	pSectionName;
+	Adesk::ULongPtr	uStreamOffset;
+	Adesk::UInt32	uUnknown16;
+	Adesk::UInt32	uUnknown20;
+	Adesk::UInt64	uUnknown24;
+};
+
+
 class DwgFileIntAcFs : public DwgFileIntImp, public AcDbFastDwgFiler
 {
 	friend class DwgFileImpBase;
@@ -29,11 +39,11 @@ protected:
 	virtual Acad::ErrorStatus getSignature(const SignatureInfo*&);		// 184//B8h
 	virtual int getType(void);							// 208//D0h
 	virtual void* getAFilePtr(void);					// 216//D8h
-	virtual void* getAcFsPtr(void);						// 224//E0h
+	virtual AcFs* getAcFsPtr(void);						// 224//E0h
 	virtual void reopenToDenyWrites(Acad::ErrorStatus&);	// 232//E8h
 	virtual unsigned int getDwgShareMode(void);				// 256//100h
 
-	virtual Acad::ErrorStatus freeData(void**);			// 264//108h
+	virtual Acad::ErrorStatus freeData(HANDLE*);			// 264//108h
 	virtual Acad::ErrorStatus initForReading(const ACHAR*,
 											 HANDLE,
 											 unsigned int,
@@ -47,13 +57,13 @@ protected:
 	virtual Acad::ErrorStatus setCrashSave(void);			// 304//130h
 	virtual Acad::ErrorStatus openForWrite(const ACHAR*);	// 312//138h
 	virtual Adesk::Int64 getObjectSectionSize(void);		// 320//140h
-	virtual AcDbDwgFiler* fastDwgFiler(void);				// 328//148h
+	virtual AcDbFastDwgFiler* fastDwgFiler(void);			// 328//148h
 	virtual Acad::ErrorStatus setFileTime(const FILETIME*, const FILETIME*, const FILETIME*);	// 336//150h
 	virtual void setSignatureInfo(unsigned int);			// 344//158h
 	virtual void setPasswordInfo(unsigned int);				// 352//160h
 	virtual Acad::ErrorStatus seekFile(Adesk::Int64, int);	// 360//168h
 	virtual Adesk::Int64 getFilePointer(void);				// 368//170h
-	virtual Acad::ErrorStatus readBinaryBytes(void*, Adesk::UInt64);	// 376//178h
+	virtual Adesk::UInt64 readBinaryBytes(void*, Adesk::UInt64);	// 376//178h
 	virtual Adesk::UInt64 writeBinaryBytes(void const*, Adesk::UInt64);	// 384//180h
 	virtual Acad::ErrorStatus flushAndCheckForWriteErrors(void);		// 392//188h
 	virtual Acad::ErrorStatus startSectionRead(int);		// 400//190h
@@ -92,22 +102,19 @@ protected:
 	Acad::ErrorStatus verifyDwgShareMode(unsigned int, unsigned int);
 	void closeAndDeleteTempRecoveryFile(void);
 
-	struct FileSection
-	{
-		const ACHAR*	pSectionName;
-		Adesk::ULongPtr	uStreamOffset;
-		Adesk::UInt32	uUnknown16;
-		Adesk::UInt32	uUnknown20;
-		Adesk::UInt64	uUnknown24;
-	};
+	Acad::ErrorStatus seekToSection(int, int);
+
+	int createStream(const StreamDescriptor*, int);
 
 protected:
 	AcFs*			m_pAcFs;			// 160
 	HANDLE			m_hFile;			// 168
 	HANDLE			m_hTmpFile;			// 176
-	const ACHAR*	m_pFileName;		// 184
-	const ACHAR*	m_pTmpFile;			// 192
+	ACHAR*			m_pFileName;		// 184
+	ACHAR*			m_pTmpFile;			// 192
 	int				m_nCurSection;		// 200
+	int				m_nUnk204;			// 204
+	int				m_nUnk208;			// 208
 	Adesk::UInt32	m_uUnk212;			// 212
 	Adesk::UInt32	m_uUnk232;			// 232
 	Adesk::UInt32	m_uUnk236;			// 236
@@ -135,7 +142,7 @@ protected:
 
 protected:
 
-	static FileSection smDefaultStreams[];
+	static StreamDescriptor smDefaultStreams[];
 };
 
 #endif // _DWG_FILE_INT_ACFS_H_

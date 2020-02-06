@@ -2,8 +2,7 @@
 #define _ACFS_FSTREAM_H_
 
 #include "adesk.h"
-
-#define MAX_STREAM_NAME_LEN		64
+#include "acfsdefs.h"
 
 #pragma pack (push, 1)
 

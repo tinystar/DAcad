@@ -189,6 +189,24 @@
     <ClInclude Include="inc\acfsnode.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="inc\dwgFileHandle.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dwgShareInfo.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdk\acdb.h">
+      <Filter>sdk_inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsdefs.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\acfsbuff.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbGlobalFuncs.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dbobji.cpp">
@@ -288,6 +306,18 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\acfsfstream.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dwgFileHandle.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dwgShareInfo.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\acfsbuff.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbGlobalFuncs.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

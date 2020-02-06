@@ -5,8 +5,12 @@
 #include "dbapserv.h"
 #include <windows.h>
 #include "cstrop.h"
-#include "dwgFileImpBase.h"
 #include "dbGlobals.h"
+#include "dwgFileInti.h"
+#include "dbfastfiler.h"
+#include "acfsdefs.h"
+
+bool gbForceUpperCasePswd = false;
 
 const int _SH_DENY_AC2004 = 0x0ACAD2004;
 
@@ -176,6 +180,121 @@ Acad::ErrorStatus AcDbImpDatabase::readDwgFile(const ACHAR* fileName, int shmode
 
 	es = Acad::eNotImplementedYet;
 	DwgFileImpBase* pDwgFileBase = DwgFileImpBase::openWithModes(pszFileRead, desiredAccess, shareMode, false, false, es, NULL);
+	if (NULL == pDwgFileBase)
+	{
+		AC_ASSERT_NOT_IMPLEMENTED();
+	}
+
+	if (pDwgFileBase->needsRecovery())
+		return Acad::eDwgNeedsRecovery;
+
+	AcDb::AcDbDwgVersion dwgVer;
+	AcDb::MaintenanceReleaseVersion maintVer;
+	es = pDwgFileBase->getDwgVersion(dwgVer, maintVer);
+	if (es != Acad::eOk || AcDb::kDHL_Unknown == dwgVer)
+		return Acad::eInvalidDwgVersion;
+
+	//m_strFile = pszFileRead;
+	pDwgFileBase->getFileTime(&m_FileTime, NULL, NULL);
+
+	if (dwgVer < AcDb::kDHL_1012 || dwgVer == AcDb::kDHL_Unknown)
+	{
+		AC_ASSERT_NOT_IMPLEMENTED();
+	}
+	else
+	{
+		es = readDwgFile(pDwgFileBase, bAllowCPConversion, wszPassword);
+	}
 
 	return es;
+}
+
+Acad::ErrorStatus AcDbImpDatabase::readDwgFile(AcDwgFileHandle* pDwgFile, bool bAllowCPConversion, const wchar_t* wszPassword)
+{
+	if (m_nUnk3426 & 1)
+	{
+		gbForceUpperCasePswd = false;
+		return Acad::eRepeatedDwgRead;
+	}
+
+	m_nUnk3426 = 1;
+
+	DwgFileInt* pDwgFileInt = (DwgFileInt*)pDwgFile;
+	if (pDwgFileInt->getType() != 4)
+		initializeADP();
+
+	AcDbHostApplicationServices* pHostAppServices = acdbHostApplicationServices();
+	if (pDwgFileInt->hasPassword())
+	{
+		AC_ASSERT_NOT_IMPLEMENTED();
+	}
+
+	Acad::ErrorStatus es = AcDbImpDatabase::readR13Drawing(pDwgFile, bAllowCPConversion);
+	return es;
+}
+
+void AcDbImpDatabase::initializeADP(void)
+{
+
+}
+
+Acad::ErrorStatus AcDbImpDatabase::readR13Drawing(AcDwgFileHandle* pDwgFile, bool bAllowCPConversion)
+{
+	DwgFileIntImp* pFileIntImp = (DwgFileIntImp*)pDwgFile;
+	AcDbFastDwgFiler* pFastDwgFiler = pFileIntImp->fastDwgFiler();
+	//AcArray<AcLargeObjectInfo, AcArrayObjectCopyReallocator<AcLargeObjectInfo>>::setLogicalLength((char *)this + 48, 0LL);
+
+	readAuxHeader(pFastDwgFiler);
+
+	AC_ASSERT_NOT_IMPLEMENTED();
+	return Acad::eNotImplementedYet;
+}
+
+Acad::ErrorStatus AcDbImpDatabase::readAuxHeader(AcDbFastDwgFiler* pFastDwgFiler)
+{
+	DwgFileIntImp* pFileIntImp = pFastDwgFiler->getDwgFileInt();
+	const ACHAR* pFileName = pFileIntImp->getFileName();
+	//AcString::assign((AcDbImpDatabase *)((char *)this + 3752), v3);
+
+	AcDb::AcDbDwgVersion dwgVer;
+	AcDb::MaintenanceReleaseVersion maintVer;
+	pFastDwgFiler->dwgVersion(dwgVer, maintVer);		// 96
+	//*((_DWORD *)this + 726) = *(_DWORD *)(v2 + 28);
+	//*((_DWORD *)this + 727) = *(_DWORD *)(v2 + 32);
+	//*((_WORD *)this + 1472) = 1;
+	//*((_DWORD *)this + 746) = 0;
+
+	if (pFileIntImp->sectionExists(kSecAuxHdr))
+	{
+		pFileIntImp->startSectionRead(kSecAuxHdr);
+		pFileIntImp->getHdrHdr();
+
+		pFastDwgFiler->readUInt8(&m_uUnk3033);		// 344
+		pFastDwgFiler->readUInt8(&m_uUnk3032);		// 344
+		pFastDwgFiler->seek(5, AcDb::kSeekFromCurrent);		// 520
+		pFastDwgFiler->readInt32(&m_nUnk2940);		// 264
+		pFastDwgFiler->readInt32(&m_nUnk2952);		// 264
+		pFastDwgFiler->readUInt16(&m_uUnk2944);		// 328
+		pFastDwgFiler->readUInt16(&m_uUnk2946);		// 328
+		pFastDwgFiler->readUInt16(&m_uUnk2948);		// 328
+		pFastDwgFiler->readUInt16(&m_uUnk2950);		// 328
+
+		Adesk::UInt16 uTmp;
+		pFastDwgFiler->readUInt16(&uTmp);		// 328
+		m_nUnk2912 = uTmp;
+		pFastDwgFiler->readUInt16(&uTmp);		// 328
+		m_nUnk2916 = uTmp;
+		pFastDwgFiler->readUInt16(&uTmp);		// 328
+		m_nUnk2920 = uTmp;
+		pFastDwgFiler->readUInt16(&uTmp);		// 328
+		m_nUnk2924 = uTmp;
+
+		pFastDwgFiler->readUInt32(&m_uUnk2932);	// 312
+		pFastDwgFiler->readUInt32(&m_uUnk2932);	// 312
+	}
+	else
+	{
+	}
+
+	return Acad::eOk;
 }

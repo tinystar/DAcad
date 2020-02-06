@@ -221,10 +221,11 @@ Acad::ErrorStatus AcDbFastDwgFiler::writeUInt16(Adesk::UInt16)
 	return Acad::eNotImplementedYet;
 }
 
-Acad::ErrorStatus AcDbFastDwgFiler::readUInt8(Adesk::UInt8*)
+Acad::ErrorStatus AcDbFastDwgFiler::readUInt8(Adesk::UInt8* pVal)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	if (Acad::eOk == m_filerStatus)
+		readwithCRC(pVal, sizeof(*pVal));
+	return m_filerStatus;
 }
 
 Acad::ErrorStatus AcDbFastDwgFiler::writeUInt8(Adesk::UInt8)
@@ -357,4 +358,22 @@ Adesk::Int64 AcDbFastDwgFiler::tell() const
 AcDbAuditInfo * AcDbFastDwgFiler::getAuditInfo() const
 {
 	return m_pAuditInfo;
+}
+
+Acad::ErrorStatus AcDbFastDwgFiler::readwithCRC(void* pBytes, Adesk::UInt64 uBytes)
+{
+	Adesk::UInt64 uReaded = m_pDwgFileInt->readBinaryBytes(pBytes, uBytes);		// 376
+	if (uReaded == uBytes)
+	{
+		AcDbFilerController& filerCtrl = controller();		// 560
+		AC_ASSERT_NOT_IMPLEMENTED();
+		//if (*(_BYTE *)(v5 + 4) & 1)
+		//	AcDbFilerController::doCRCAccumulation((AcDbFilerController *)v5, a2, v3);
+	}
+	else
+	{
+		memset(pBytes, 0, uBytes);
+		m_filerStatus = Acad::eFilerError;
+	}
+	return m_filerStatus;
 }

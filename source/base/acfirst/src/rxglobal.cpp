@@ -36,7 +36,7 @@ void delSysClasses(void)
 	AC_SAFE_DELETE(sysClasses);
 }
 
-const ACHAR* acStrdup(const ACHAR* pszStr)
+ACHAR* acStrdup(const ACHAR* pszStr)
 {
 	ACHAR* pDupStr = NULL;
 	if (pszStr != NULL)

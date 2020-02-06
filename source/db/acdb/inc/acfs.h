@@ -2,11 +2,9 @@
 #define _ACFS_H_
 
 #include "acdb.h"
+#include "acfsdefs.h"
 #include <windows.h>
 
-class AcFs_INFO_t;
-class AcFs6_INFO_t;
-class AcFs_STREAMINFO_t;
 class AcFsStream;
 class AcFsCallBack;
 class AcStream;

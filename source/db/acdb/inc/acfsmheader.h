@@ -4,6 +4,7 @@
 #include "adesk.h"
 #include <windows.h>
 #include "acfsfheader.h"
+#include "acfsdefs.h"
 
 class AcFs_mbheader;
 class AcFsHeap;
@@ -27,6 +28,15 @@ public:
 
 public:
 	AcFs_mbheader* ConvertID(int);
+
+	Adesk::UInt32 getUnk260() const { return m_uUnk260; }
+	Adesk::Int32 getUnk76() const { return m_nUnk76; }
+
+	HANDLE getFileHandle() const { return m_hFile; }
+
+	void GetAcFsInfo(AcFs_INFO_t*);
+
+	void DeleteMemory(void);
 
 protected:
 	void FreeXlat(void);

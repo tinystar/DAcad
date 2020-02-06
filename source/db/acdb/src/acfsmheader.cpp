@@ -11,17 +11,30 @@ static const int MHEADER_SIZE = 108;	// 0x6C
 
 AcFs_mheader::AcFs_mheader()
 {
+	m_fHeader.Reset();
 	m_hFile = NULL;
 	Reset();
 }
 
 AcFs_mheader::~AcFs_mheader()
 {
-
+	if (m_hFile != NULL)
+	{
+		if (!m_bKeepFile)
+			CloseHandle(m_hFile);
+		m_hFile = NULL;
+	}
+	
+	DeleteMemory();
 }
 
 void AcFs_mheader::Reset(void)
 {
+	m_pUnk0 = NULL;
+	m_pUnk8 = NULL;
+	m_pUnk16 = NULL;
+	m_pMemBlkHead = NULL;
+	m_pMemBlkTail = NULL;
 	m_nUnk40 = 0;
 	m_nUnk48 = 0;
 	m_nCurPos = 0;
@@ -33,8 +46,10 @@ void AcFs_mheader::Reset(void)
 	m_nUnk84 = 0;
 	m_nUnk88 = 0;
 	m_nUnk92 = 0;
+	m_pUnk104 = NULL;
 	m_pUnk112 = NULL;
 	m_pUnk120 = NULL;
+	m_pUnk144 = NULL;
 	m_uUnk260 = 0;
 	m_bKeepFile = Adesk::kFalse;
 	m_nUnk268 = 0;
@@ -119,8 +134,13 @@ int AcFs_mheader::OpenFile(const void* pFileName,
 
 int AcFs_mheader::CloseFile(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	SetLastError(0);
+	int ret = ERROR_SUCCESS;
+	if (m_hFile && !m_bKeepFile && !CloseHandle(m_hFile))
+		ret = GetLastError();
+	m_hFile = NULL;
+	DeleteMemory();
+	return ret;
 }
 
 int AcFs_mheader::ReadData(void* pData, int nSize, Adesk::Int64 nPos)
@@ -347,5 +367,46 @@ AcFs_mbheader* AcFs_mheader::ConvertID(int id)
 
 void AcFs_mheader::FreeXlat(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
+	if (m_pUnk112 != NULL)
+	{
+		free(m_pUnk112);
+		m_pUnk112 = NULL;
+	}
+	if (m_pUnk120 != NULL)
+	{
+		free(m_pUnk120);
+		m_pUnk120 = NULL;
+	}
+}
+
+void AcFs_mheader::GetAcFsInfo(AcFs_INFO_t* pInfo)
+{
+	pInfo->uUnk40 = m_nUnk72;
+	pInfo->uUnk0 = m_nUnk48;
+	pInfo->nUnk32 = m_nUnk68;
+	pInfo->pUnk16 = NULL;
+	pInfo->pUnk24 = NULL;
+	pInfo->nUnk36 = m_nUnk64;
+
+	for (AcFs_mbheader* pmbheader = m_pMemBlkHead; pmbheader; pmbheader = pmbheader->pNext)
+	{
+		if (pmbheader->nUnk28 >= 0)
+			pInfo->pUnk16 += pmbheader->nUnk24;
+		else
+			pInfo->pUnk24 += pmbheader->nUnk24;
+	}
+}
+
+void AcFs_mheader::DeleteMemory(void)
+{
+	FreeXlat();
+	AcFs_mbheader* pmbheader = m_pMemBlkHead;
+	while (pmbheader != NULL)
+	{
+		AcFs_mbheader* pNextHeader = pmbheader->pNext;
+		free(pmbheader);
+		pmbheader = pNextHeader;
+	}
+
+	Reset();
 }

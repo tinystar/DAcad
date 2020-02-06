@@ -3,6 +3,7 @@
 
 #include "acfs.h"
 #include "acfsistream.h"
+#include "acfsbuff.h"
 
 class AcFs_mheader;
 class AcFsHeap;
@@ -12,7 +13,7 @@ class AcFsI : public AcFs
 	friend AcFs* AcFsNewClass();
 
 protected:
-	AcFsI();
+	AcFsI(AcFsHeap* pHeap);
 
 public:
 	virtual int CreateFile(const char*, unsigned int, unsigned int, unsigned int, unsigned int);	// 0//0h
@@ -72,13 +73,22 @@ public:
 public:
 	Adesk::UInt32 getAccessMode() const { return m_uAccessMode; }
 
+	void lock() { EnterCriticalSection(&m_cs); }
+	void unlock() { LeaveCriticalSection(&m_cs); }
+
+	AcFsTempBuff& getTempBuff464() { return m_BuffUnk464; }
+	AcFsTempBuff& getTempBuff488() { return m_BuffUnk488; }
+
+	AcFs_mheader* getAcFsmheader() const { return m_pMHeader; }
+
+	int uncompress(void*, Adesk::UInt32*, const void*, Adesk::UInt32, int);
+
+	void setUnk584(Adesk::UInt32 val) { m_uUnk584 = val; }
+
 protected:
 	int iCreateFile(const void*, unsigned int, unsigned int, unsigned int, 
 					unsigned int, bool, HANDLE, Adesk::Int64);
 	int iCreateStream(const wchar_t*, unsigned int*, AcFsIStream**, int, int, unsigned int);
-
-	void lock() { EnterCriticalSection(&m_cs); }
-	void unlock() { LeaveCriticalSection(&m_cs); }
 
 	int processLogicalHeaders(void);
 	int ReadHeader(void);
@@ -86,6 +96,14 @@ protected:
 	int CheckBlockSize(int);
 
 	void DeleteMemory(void);
+
+	AcFsIStream* FindStream(const wchar_t*, unsigned int);
+
+	void Reset(void);
+
+	void ResetAllCachePtrs(void);
+
+	int iFlush(bool);
 
 protected:
 	Adesk::Int32		m_nUnk8;			// 8//8h
@@ -109,12 +127,17 @@ protected:
 // 		AcFsHeap*			m_pFsHeap;			// 16 + 416 = 432
 	AcFs_mheader*		m_pMHeader;			// 448//1C0h
 	int					m_nMaxCache;		// 456//1C8h
+	AcFsTempBuff		m_BuffUnk464;		// 464//1D0h
+	AcFsTempBuff		m_BuffUnk488;		// 488//1E8h
+	AcFsTempBuff		m_BuffUnk512;		// 512//200h
+	AcFsTempBuff		m_BuffUnk536;		// 536//218h
 	Adesk::UInt32		m_uUnk560;			// 560//230h
 	int					m_nComprType;		// 564//234h
 	Adesk::Int32		m_nUnk568;			// 568//238h
 	Adesk::Int32		m_nUnk572;			// 572//23Ch
 	Adesk::UInt32		m_uAccessMode;		// 576//240h
 	Adesk::UInt32		m_uPrivtHdrSize;	// 580//244h
+	Adesk::UInt32		m_uUnk584;			// 584//248h
 	CRITICAL_SECTION	m_cs;				// 592//250h
 	AcFsCallBack*		m_pCallback;		// 656//290h
 	Adesk::Int32		m_nUnk664;			// 664//298h

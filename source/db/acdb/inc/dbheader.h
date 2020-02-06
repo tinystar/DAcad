@@ -13,6 +13,10 @@ public:
 	~AcDbHeader();
 
 public:
+	Acad::ErrorStatus dwgIn(AcDbDwgFiler*);
+	Acad::ErrorStatus dwgOut(AcDbDwgFiler*, AcDbIdMapping*);
+
+public:
 	AcDbHandle handseed(void) const { return m_handleSeed; }
 	Acad::ErrorStatus setHandseed(const AcDbHandle& hSeed);
 

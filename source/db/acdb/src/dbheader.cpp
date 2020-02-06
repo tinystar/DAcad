@@ -86,3 +86,15 @@ Acad::ErrorStatus AcDbHeader::setHandseed(const AcDbHandle& hSeed)
 	AC_ASSERT_NOT_IMPLEMENTED();
 	return Acad::eNotImplementedYet;
 }
+
+Acad::ErrorStatus AcDbHeader::dwgIn(AcDbDwgFiler*)
+{
+	AC_ASSERT_NOT_IMPLEMENTED();
+	return Acad::eNotImplementedYet;
+}
+
+Acad::ErrorStatus AcDbHeader::dwgOut(AcDbDwgFiler*, AcDbIdMapping*)
+{
+	AC_ASSERT_NOT_IMPLEMENTED();
+	return Acad::eNotImplementedYet;
+}

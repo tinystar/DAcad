@@ -13,6 +13,8 @@ AcFsHeap* GetAcFsHeap(void);
 
 AcFs* AcFsNewClass();
 AcFs* AcFs6NewClass();
+void AcFsDeleteClass(AcFs*);
+void AcFs6DeleteClass(AcFs*);
 
 int iFileSeek(HANDLE, Adesk::Int64);
 

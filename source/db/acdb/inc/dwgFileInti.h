@@ -3,8 +3,9 @@
 
 #include "dwgFileImpBase.h"
 
-class AcDbDwgFiler;
+class AcDbFastDwgFiler;
 class CIPHER;
+class AcDbHeader;
 
 class DwgFileIntImp : public DwgFileImpBase
 {
@@ -25,13 +26,13 @@ public:
 	virtual Acad::ErrorStatus setCrashSave(void) = 0;			// 304//130h
 	virtual Acad::ErrorStatus openForWrite(const ACHAR*) = 0;	// 312//138h
 	virtual Adesk::Int64 getObjectSectionSize(void) = 0;		// 320//140h
-	virtual AcDbDwgFiler* fastDwgFiler(void) = 0;				// 328//148h
+	virtual AcDbFastDwgFiler* fastDwgFiler(void) = 0;			// 328//148h
 	virtual Acad::ErrorStatus setFileTime(const FILETIME*, const FILETIME*, const FILETIME*) = 0;	// 336//150h
 	virtual void setSignatureInfo(unsigned int) = 0;			// 344//158h
 	virtual void setPasswordInfo(unsigned int) = 0;				// 352//160h
 	virtual Acad::ErrorStatus seekFile(Adesk::Int64, int) = 0;	// 360//168h
 	virtual Adesk::Int64 getFilePointer(void) = 0;				// 368//170h
-	virtual Acad::ErrorStatus readBinaryBytes(void*, Adesk::UInt64) = 0;	// 376//178h
+	virtual Adesk::UInt64 readBinaryBytes(void*, Adesk::UInt64) = 0;	// 376//178h
 	virtual Adesk::UInt64 writeBinaryBytes(void const*, Adesk::UInt64) = 0;	// 384//180h
 	virtual Acad::ErrorStatus flushAndCheckForWriteErrors(void) = 0;		// 392//188h
 	virtual Acad::ErrorStatus startSectionRead(int) = 0;		// 400//190h
@@ -61,6 +62,15 @@ public:
 	virtual Acad::ErrorStatus tryPassword(const wchar_t*, CIPHER*);		// 592//250h
 	virtual Acad::ErrorStatus flushBuffers(void) = 0;			// 600//258h
 	virtual Acad::ErrorStatus getAcADPPackage(void) = 0;		// 608//260h
+
+protected:
+	void readAcDbHdr(void);
+
+	static Acad::ErrorStatus tryPassword(AcFs*, const wchar_t*, CIPHER*);
+
+protected:
+	AcDbHeader*			m_pDbHeader;		// 96
+	Adesk::Int8			m_nUnk113;			// 113
 };
 
 #endif // _DWG_FILE_INTI_H_

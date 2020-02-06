@@ -23,3 +23,8 @@ Acad::ErrorStatus getDWGTempFileName(const ACHAR*, const ACHAR*, ACHAR*)
 
 	return Acad::eNotImplementedYet;
 }
+
+void notifyAcDbDsDwgFilerBeingClosed(DwgFileIntImp*, bool)
+{
+	AC_ASSERT_NOT_IMPLEMENTED();
+}

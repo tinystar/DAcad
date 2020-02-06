@@ -6,18 +6,27 @@
 #include "lzo/lzoconf.h"
 #include "lzo/lzo1y.h"
 #include "acfsfstream.h"
+#include "cstrop.h"
 
 
-AcFsI::AcFsI()
-	: m_pMHeader(NULL)
-	, m_pFsHeap(NULL)
+AcFsI::AcFsI(AcFsHeap* pHeap)
+	: m_pFsHeap(pHeap)
+	, m_pMHeader(NULL)
 	, m_pCallback(NULL)
 {
+	m_stream1.m_pFsHeap = m_pFsHeap;
+	m_BuffUnk464.m_pFsHeap = m_pFsHeap;
+	m_BuffUnk488.m_pFsHeap = m_pFsHeap;
+	m_BuffUnk512.m_pFsHeap = m_pFsHeap;
+	m_BuffUnk536.m_pFsHeap = m_pFsHeap;
+
+	Reset();
 	InitializeCriticalSection(&m_cs);
 }
 
 AcFsI::~AcFsI()
 {
+	DeleteMemory();
 	DeleteCriticalSection(&m_cs);
 }
 
@@ -43,14 +52,18 @@ int AcFsI::OpenUsing(HANDLE hFile, unsigned int uUnk)
 
 int AcFsI::OpenUsing(AcStream*, unsigned int)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	return ERROR_SUCCESS;
 }
 
 Adesk::Boolean AcFsI::isOpen(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Adesk::kFalse;
+	if (NULL == m_pMHeader)
+		return Adesk::kFalse;
+
+	if (NULL == m_pMHeader->getFileHandle())
+		return Adesk::kFalse;
+
+	return Adesk::kTrue;
 }
 
 int AcFsI::SetFileTime(const FILETIME*, const FILETIME*, const FILETIME*)
@@ -59,28 +72,50 @@ int AcFsI::SetFileTime(const FILETIME*, const FILETIME*, const FILETIME*)
 	return -1;
 }
 
-int AcFsI::GetFileTime(FILETIME*, FILETIME*, FILETIME*)
+int AcFsI::GetFileTime(FILETIME* lpCreationTime, FILETIME* lpLastAccessTime, FILETIME* lpLastWriteTime)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	if (NULL == m_pMHeader)
+		return ERROR_INVALID_HANDLE;
+
+	if (!::GetFileTime(m_pMHeader->getFileHandle(), lpCreationTime, lpLastAccessTime, lpLastWriteTime))
+		return GetLastError();
+
+	return ERROR_SUCCESS;
 }
 
-int AcFsI::GetFileInformationByHandle(BY_HANDLE_FILE_INFORMATION*)
+int AcFsI::GetFileInformationByHandle(BY_HANDLE_FILE_INFORMATION* pInfo)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	if (NULL == m_pMHeader)
+		return ERROR_INVALID_HANDLE;
+	if (NULL == pInfo)
+		return ERROR_INVALID_PARAMETER;
+
+	if (!::GetFileInformationByHandle(m_pMHeader->getFileHandle(), pInfo))
+		return GetLastError();
+
+	return ERROR_SUCCESS;
 }
 
 int AcFsI::CloseFile(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	lock();
+
+	int ret1 = iFlush(true);
+	int ret2 = m_pMHeader->CloseFile();
+	DeleteMemory();
+	if (ERROR_SUCCESS == ret1)
+		ret1 = ret2;
+
+	unlock();
+	return ret1;
 }
 
 int AcFsI::Flush(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	lock();
+	int ret = iFlush(false);
+	unlock();
+	return ret;
 }
 
 int AcFsI::WriteFile(const void*, Adesk::UInt64)
@@ -89,40 +124,52 @@ int AcFsI::WriteFile(const void*, Adesk::UInt64)
 	return -1;
 }
 
-int AcFsI::ReadFile(void*, Adesk::UInt64*)
+int AcFsI::ReadFile(void* pBytes, Adesk::UInt64* pLength)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	if (NULL == m_pMHeader)
+		return ERROR_INVALID_HANDLE;
+
+	return m_stream1.ReadFile(pBytes, pLength);
 }
 
-int AcFsI::SetFilePointer(Adesk::Int64, unsigned int)
+int AcFsI::SetFilePointer(Adesk::Int64 nOffset, unsigned int method)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	if (NULL == m_pMHeader)
+		return ERROR_INVALID_HANDLE;
+
+	return m_stream1.SetFilePointer(nOffset, method);
 }
 
 int AcFsI::SetEndOfFile(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	if (NULL == m_pMHeader)
+		return ERROR_INVALID_HANDLE;
+
+	return m_stream1.SetEndOfFile();
 }
 
-int AcFsI::ZeroData(Adesk::UInt64, Adesk::UInt64)
+int AcFsI::ZeroData(Adesk::UInt64 u1, Adesk::UInt64 u2)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	if (NULL == m_pMHeader)
+		return ERROR_INVALID_HANDLE;
+
+	return m_stream1.ZeroData(u1, u2);
 }
 
-int AcFsI::GetFilePointer(Adesk::UInt64*)
+int AcFsI::GetFilePointer(Adesk::UInt64* pFilePos)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	if (NULL == m_pMHeader)
+		return ERROR_INVALID_HANDLE;
+
+	return m_stream1.GetFilePointer(pFilePos);
 }
 
-int AcFsI::GetFileSize(Adesk::UInt64*)
+int AcFsI::GetFileSize(Adesk::UInt64* pFileSize)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	if (NULL == m_pMHeader)
+		return ERROR_INVALID_HANDLE;
+
+	return m_stream1.GetFileSize(pFileSize);
 }
 
 void AcFsI::SetCompressionType(int nType)
@@ -195,8 +242,7 @@ void AcFsI::EnableWriteCache(int)
 
 Adesk::UInt64 AcFsI::GetBlockSize(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return 0;
+	return m_uUnk560;
 }
 
 void AcFsI::SetPrivateHeaderSize(int nSize)
@@ -208,14 +254,33 @@ void AcFsI::SetPrivateHeaderSize(int nSize)
 
 int AcFsI::GetPrivateHeaderSize(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return 0;
+	return m_uPrivtHdrSize;
 }
 
-int AcFsI::GetAcFsInfo(AcFs_INFO_t*)
+int AcFsI::GetAcFsInfo(AcFs_INFO_t* pInfo)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	if (NULL == m_pMHeader)
+		return ERROR_INVALID_HANDLE;
+	if (NULL == pInfo)
+		return ERROR_INVALID_PARAMETER;
+
+	lock();
+
+	pInfo->uSize = 0;
+	pInfo->uUnk48 = m_nUnk8;
+	pInfo->uUnk52 = m_nUnk664;
+	AcFsIStream* pStream = &m_stream1;
+	for (Adesk::Int32 i = 0; i < m_nUnk8; ++i)
+	{
+		pInfo->uSize += pStream->m_uFileSize;
+		pStream = pStream->m_pNextStream;
+	}
+
+	m_pMHeader->GetAcFsInfo(pInfo);
+
+	unlock();
+
+	return ERROR_SUCCESS;
 }
 
 int AcFsI::GetAcFs6Info(AcFs6_INFO_t*)
@@ -224,15 +289,34 @@ int AcFsI::GetAcFs6Info(AcFs6_INFO_t*)
 	return -1;
 }
 
-int AcFsI::GetStreamInfo(int, AcFs_STREAMINFO_t*)
+int AcFsI::GetStreamInfo(int uStreamId, AcFs_STREAMINFO_t* pStreamInfo)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	if (NULL == m_pMHeader)
+		return ERROR_INVALID_HANDLE;
+	if (NULL == pStreamInfo || (uStreamId < 0 || uStreamId >= m_nUnk8))
+		return ERROR_INVALID_PARAMETER;
+
+	lock();
+
+	AcFsIStream* pStream = &m_stream1;
+	for (int i = 0; i < uStreamId && pStream != NULL; ++i)
+		pStream = pStream->m_pNextStream;
+
+	int ret = ERROR_INVALID_PARAMETER;
+	if (pStream != NULL)
+		ret = pStream->GetStreamInfo(pStreamInfo);	// 80
+
+	unlock();
+
+	return ret;
 }
 
 void AcFsI::ResyncSystemFilePointer(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
+	lock();
+	if (m_pMHeader != NULL)
+		m_pMHeader->m_nCurPos = -1;
+	unlock();
 }
 
 int AcFsI::WritePrivateHeader(const void*, int, int)
@@ -241,22 +325,55 @@ int AcFsI::WritePrivateHeader(const void*, int, int)
 	return -1;
 }
 
-int AcFsI::ReadPrivateHeader(void*, int, int)
+int AcFsI::ReadPrivateHeader(void* pData, int nSize, int nPos)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	if (NULL == m_pMHeader)
+		return ERROR_INVALID_HANDLE;
+	if (NULL == pData || nSize < 0 || nPos < 0 || nSize + nPos > m_uPrivtHdrSize)
+		return ERROR_INVALID_PARAMETER;
+
+	int ret = ERROR_SUCCESS;
+	if (nSize > 0)
+	{
+		lock();
+		ret = m_pMHeader->ReadData(pData, nSize, nPos);
+		unlock();
+	}
+
+	return ret;
 }
 
-int AcFsI::OpenStream(const char*, unsigned int, AcFsStream**)
+int AcFsI::OpenStream(const char* pStreamName, unsigned int uStreamId, AcFsStream** ppStream)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	wchar_t szWStream[MAX_STREAM_NAME_LEN] = { 0 };
+	if (pStreamName)
+	{
+		if (!MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, pStreamName, -1, szWStream, MAX_STREAM_NAME_LEN))
+			return GetLastError();
+	}
+
+	return OpenStream(szWStream, uStreamId, ppStream);
 }
 
-int AcFsI::OpenStream(const wchar_t*, unsigned int, AcFsStream**)
+int AcFsI::OpenStream(const wchar_t* pStreamName, unsigned int uStreamId, AcFsStream** ppStream)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	lock();
+
+	AcFsIStream* pFound = FindStream(pStreamName, uStreamId);
+	*ppStream = pFound;
+	if (NULL == pFound)
+	{
+		unlock();
+		return ERROR_NOT_FOUND;
+	}
+
+	pFound->m_uAcessType |= 0x80000000;
+	if (m_pCallback)
+	{
+		AC_ASSERT_NOT_IMPLEMENTED();
+	}
+
+	return ERROR_SUCCESS;
 }
 
 int AcFsI::CreateStream(const char*, unsigned int*, unsigned int, unsigned int, AcFsStream**, int, Adesk::UInt64, unsigned int)
@@ -295,41 +412,37 @@ void AcFsI::DefineAppFlags(unsigned int, unsigned int)
 
 int AcFsI::GetAppFlags(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	return m_nUnk664;
 }
 
 void AcFsI::SetKey(const unsigned int*)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
+
 }
 
 Adesk::Boolean AcFsI::IsRealAcFsFile(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Adesk::kFalse;
+	return Adesk::kTrue;
 }
 
 void AcFsI::SetV6StreamCallbackFix(bool)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
+
 }
 
 int AcFsI::GetLastWriteError(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	return m_pMHeader->m_nUnk88;
 }
 
 int AcFsI::GetNumberOfWriteErrors(void)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return -1;
+	return m_pMHeader->m_nUnk92;
 }
 
 void AcFsI::SetThreading(int)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
+	
 }
 
 int AcFsI::iCreateFile(const void* pFileName, 
@@ -513,13 +626,120 @@ int AcFsI::ReadHeader(void)
 	return nRet;
 }
 
-int AcFsI::CheckBlockSize(int)
+int AcFsI::CheckBlockSize(int nBlockSize)
 {
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return 0;
+	if (nBlockSize > m_BuffUnk464.m_uSize)
+	{
+		int nSize = 2 * ((nBlockSize >> 3) + nBlockSize) + 1024;
+		m_BuffUnk488.SetSize(nSize);
+		m_BuffUnk512.SetSize(nSize);
+		m_BuffUnk464.SetSize(nBlockSize);
+
+		ResetAllCachePtrs();
+
+		if (NULL == m_BuffUnk488.m_pBuffer ||
+			NULL == m_BuffUnk512.m_pBuffer ||
+			NULL == m_BuffUnk464.m_pBuffer)
+			return ERROR_NOT_ENOUGH_MEMORY;
+	}
+
+	return ERROR_SUCCESS;
 }
 
 void AcFsI::DeleteMemory(void)
 {
+	AcFsIStream* pStream = &m_stream1;
+	while (pStream != NULL)
+	{
+		AcFsIStream* pNextStream = pStream->m_pNextStream;
+		pStream->DeleteMemory();
+		if (pStream->GetStreamID())		// 120
+			delete pStream;				// 184
+
+		pStream = pNextStream;
+	}
+
+	m_BuffUnk488.Reset();
+	m_BuffUnk512.Reset();
+	m_BuffUnk536.Reset();
+	m_BuffUnk464.Reset();
+
+	if (m_pMHeader != NULL)
+	{
+		delete m_pMHeader;
+		m_pMHeader = NULL;
+	}
+
+	m_stream1.Reset();
+	Reset();
+}
+
+AcFsIStream* AcFsI::FindStream(const wchar_t* pStreamName, unsigned int uStreamId)
+{
+	AcFsIStream* pStream = &m_stream1;
+	for (; pStream != NULL; pStream = pStream->m_pNextStream)
+	{
+		bool bFound = pStreamName && *pStreamName ? 0 == ac_strcmp(pStreamName, pStream->m_szStreamName) : uStreamId == pStream->m_nStreamId;
+		if (bFound)
+			break;
+	}
+	return pStream;
+}
+
+void AcFsI::Reset(void)
+{
+	m_pMHeader = NULL;
+	m_nUnk8 = 1;
+	m_nMaxCache = 0x200000;
+
+	m_BuffUnk488.Reset();
+	m_BuffUnk512.Reset();
+	m_BuffUnk464.Reset();
+	m_BuffUnk536.Reset();
+
+	m_nUnk568 = 32;
+	m_nUnk572 = 64;
+	m_uUnk584 = 0;
+	m_uUnk560 = 29696;
+	m_nComprType = 2;
+	m_uPrivtHdrSize = 0;
+	m_pCallback = NULL;
+	m_nUnk664 = 0;
+	m_nUnk668 = 1;
+}
+
+void AcFsI::ResetAllCachePtrs(void)
+{
+	AcFsIStream* pStream = &m_stream1;
+	for (; pStream != NULL; pStream = pStream->m_pNextStream)
+	{
+		pStream->m_pBufferEnd = NULL;
+		pStream->m_pBufferCur = NULL;
+		pStream->m_bUnk380 = Adesk::kTrue;
+	}
+}
+
+int AcFsI::uncompress(void* pDstBuf, Adesk::UInt32* pDstLen, const void* pSrcBuf, Adesk::UInt32 nSrcLen, int nType)
+{
+	int ret = -1;
+	if (2 == nType)
+	{
+		lzo_uint uDst = *pDstLen;
+		ret = lzo1y_decompress((const lzo_bytep)pSrcBuf, nSrcLen, (lzo_bytep)pDstBuf, &uDst, NULL);
+		*pDstLen = uDst;
+	}
+	else if (nType != 3)
+	{
+		*pDstLen = nSrcLen;
+		memcpy(pDstBuf, pSrcBuf, nSrcLen);
+		ret = 0;
+	}
+
+	return ret;
+}
+
+int AcFsI::iFlush(bool)
+{
 	AC_ASSERT_NOT_IMPLEMENTED();
+	return -1;
 }

@@ -4,6 +4,7 @@
 #include "dwgFileInt.h"
 
 class AcDbImpDatabase;
+class DwgFileIntImp;
 
 class DwgFileImpBase : public DwgFileInt
 {
@@ -31,7 +32,7 @@ public:
 	virtual void setIsXRefTemp(const ACHAR*);				// 248//F8h
 	virtual unsigned int getDwgShareMode(void);				// 256//100h
 
-	virtual Acad::ErrorStatus freeData(void**) = 0;			// 264//108h
+	virtual Acad::ErrorStatus freeData(HANDLE*) = 0;		// 264//108h
 	virtual Acad::ErrorStatus initForReading(const ACHAR*,
 											 HANDLE,
 											 unsigned int, 
@@ -43,6 +44,16 @@ public:
 
 	virtual Acad::ErrorStatus attachDb(AcDbImpDatabase*, bool);			// 280//118h
 	virtual Acad::ErrorStatus detachDb(AcDbImpDatabase*, bool, bool);	// 288//120h
+
+public:
+	void subCloseFile(void);
+	void setValid(bool bValid) { m_bValid = bValid; }
+	void setDwgVersion(AcDb::AcDbDwgVersion ver, AcDb::MaintenanceReleaseVersion maintVer)
+	{
+		m_dwgVer1 = ver;
+		m_maintVer1 = maintVer;
+	}
+	void setUnk65(bool b) { m_bUnk65 = b; }
 
 public:
 	static Adesk::UInt32 numberOfOpenDwgFiles(void) { return smNumberOfOpenDwgFiles; }
@@ -67,10 +78,10 @@ public:
 						   AcDb::AcDbDwgVersion&, 
 						   AcDb::MaintenanceReleaseVersion&);
 
-	static DwgFileImpBase* newDwgFileIntADP(void);
-	static DwgFileImpBase* newDwgFileIntAcFs(void);
-	static DwgFileImpBase* newDwgFileIntAFile(void);
-	static DwgFileImpBase* newDwgFileIntAFileR12(void);
+	static DwgFileIntImp* newDwgFileIntADP(void);
+	static DwgFileIntImp* newDwgFileIntAcFs(void);
+	static DwgFileIntImp* newDwgFileIntAFile(void);
+	static DwgFileIntImp* newDwgFileIntAFileR12(void);
 
 protected:
 	static Adesk::UInt32 smNumberOfOpenDwgFiles;
@@ -87,7 +98,12 @@ protected:
 	unsigned int					m_AccessMode;	// 44
 	unsigned int					m_ShareMode;	// 48
 	bool							m_bValid;		// 52
+	bool							m_bIsXrefTmp;	// 53
 	bool							m_bUnknown54;	// 54
+	const ACHAR*					m_pOrgXRefName;	// 56
+	bool							m_bIsXref;		// 64
+	bool							m_bUnk65;		// 65
+	const ACHAR*					m_pszFile;		// 72
 };
 
 #endif // _DWG_FILE_IMP_BASE_H_
