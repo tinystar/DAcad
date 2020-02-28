@@ -7,7 +7,6 @@
 #include "acfsmbheader.h"
 #include "acfscmprheader.h"
 
-static const int MHEADER_SIZE = 108;	// 0x6C
 
 AcFs_mheader::AcFs_mheader()
 {
@@ -20,7 +19,7 @@ AcFs_mheader::~AcFs_mheader()
 {
 	if (m_hFile != NULL)
 	{
-		if (!m_bKeepFile)
+		if (!m_bRefFile)
 			CloseHandle(m_hFile);
 		m_hFile = NULL;
 	}
@@ -30,30 +29,30 @@ AcFs_mheader::~AcFs_mheader()
 
 void AcFs_mheader::Reset(void)
 {
-	m_pUnk0 = NULL;
-	m_pUnk8 = NULL;
-	m_pUnk16 = NULL;
+	m_pUnkHdr0 = NULL;
+	m_pUnkHdr8 = NULL;
+	m_pUnkHdr16 = NULL;
 	m_pMemBlkHead = NULL;
 	m_pMemBlkTail = NULL;
 	m_nUnk40 = 0;
-	m_nUnk48 = 0;
+	m_nMBEndAddr = 0;
 	m_nCurPos = 0;
-	m_nUnk64 = 0;
-	m_nUnk68 = 0;
-	m_nUnk72 = 32;
-	m_nUnk76 = 128;
-	m_nUnk80 = 64;
-	m_nUnk84 = 0;
-	m_nUnk88 = 0;
-	m_nUnk92 = 0;
-	m_pUnk104 = NULL;
-	m_pUnk112 = NULL;
-	m_pUnk120 = NULL;
-	m_pUnk144 = NULL;
-	m_uUnk260 = 0;
-	m_bKeepFile = Adesk::kFalse;
-	m_nUnk268 = 0;
-	m_nUnk272 = 0;
+	m_nNegBlksCount = 0;
+	m_nPosBlksCount = 0;
+	m_nAlignment = 32;
+	m_nAlignFileHdrSize = 128;
+	m_nDoubleAlign = 64;
+	m_nLastRdError = 0;
+	m_nLastWrError = 0;
+	m_nNumOfWrErrs = 0;
+	m_pBlksInfoHdr = NULL;
+	m_pNegBlkHdrs = NULL;
+	m_pPosBlkHdrs = NULL;
+	m_pStrmsBlkHdr = NULL;
+	m_uFileHdrAddr = 0;
+	m_bRefFile = Adesk::kFalse;
+	m_nPosBlksMaxId = 0;
+	m_nNegBlksMaxId = 0;
 
 	Adesk::UInt32 uSeed = 1;
 	for (int i = 0; i < 256; ++i)
@@ -72,13 +71,13 @@ int AcFs_mheader::OpenFile(const void* pFileName,
 						   HANDLE hFile, 
 						   Adesk::Int64 nFileHdrPos)
 {
-	m_bKeepFile = Adesk::kFalse;
-	m_nUnk84 = ERROR_SUCCESS;
-	m_uUnk140 = desiredAccess;
+	m_bRefFile = Adesk::kFalse;
+	m_nLastRdError = ERROR_SUCCESS;
+	m_uDesiredAccess = desiredAccess;
 
 	if (hFile != NULL)
 	{
-		m_bKeepFile = Adesk::kTrue;
+		m_bRefFile = Adesk::kTrue;
 		m_hFile = hFile;
 	}
 	else
@@ -90,16 +89,16 @@ int AcFs_mheader::OpenFile(const void* pFileName,
 		if (INVALID_HANDLE_VALUE == m_hFile)
 		{
 			m_hFile = NULL;
-			m_nUnk84 = GetLastError();
-			return m_nUnk84;
+			m_nLastRdError = GetLastError();
+			return m_nLastRdError;
 		}
 
 		if (GetFileType(m_hFile) != FILE_TYPE_DISK)
 		{
 			CloseHandle(m_hFile);
 			m_hFile = NULL;
-			m_nUnk84 = ERROR_NOT_SUPPORTED;
-			return m_nUnk84;
+			m_nLastRdError = ERROR_NOT_SUPPORTED;
+			return m_nLastRdError;
 		}
 	}
 
@@ -109,8 +108,8 @@ int AcFs_mheader::OpenFile(const void* pFileName,
 	{
 		if (ERROR_HANDLE_EOF == ret)
 		{
-			m_nUnk84 = ret & 0xFFFFFF00;
-			return m_nUnk84;
+			m_nLastRdError = ret & 0xFFFFFF00;
+			return m_nLastRdError;
 		}
 	}
 	else
@@ -120,23 +119,23 @@ int AcFs_mheader::OpenFile(const void* pFileName,
 
 	if (ret != ERROR_SUCCESS)
 	{
-		if (!m_bKeepFile)
+		if (!m_bRefFile)
 			CloseHandle(m_hFile);
 		m_hFile = NULL;
 
-		m_nUnk84 = ret;
-		return m_nUnk84;
+		m_nLastRdError = ret;
+		return m_nLastRdError;
 	}
 
-	m_nUnk84 = ERROR_SUCCESS;
-	return m_nUnk84;
+	m_nLastRdError = ERROR_SUCCESS;
+	return m_nLastRdError;
 }
 
 int AcFs_mheader::CloseFile(void)
 {
 	SetLastError(0);
 	int ret = ERROR_SUCCESS;
-	if (m_hFile && !m_bKeepFile && !CloseHandle(m_hFile))
+	if (m_hFile && !m_bRefFile && !CloseHandle(m_hFile))
 		ret = GetLastError();
 	m_hFile = NULL;
 	DeleteMemory();
@@ -165,16 +164,16 @@ int AcFs_mheader::ReadData(void* pData, int nSize, Adesk::Int64 nPos)
 
 int AcFs_mheader::ReadBlock(AcFs_mbheader* pMBHeader, void* pData, int nOff, int nSize)
 {
-	return ReadData(pData, nSize, m_uUnk260 + m_nUnk76 + pMBHeader->nUnk16 + nOff);
+	return ReadData(pData, nSize, m_uFileHdrAddr + m_nAlignFileHdrSize + pMBHeader->nOffset + nOff);
 }
 
 int AcFs_mheader::ReadFileHeader(Adesk::Int64 nPos)
 {
 	if (0 == nPos)
-		nPos = m_uUnk260;
+		nPos = m_uFileHdrAddr;
 
-	AC_BYTE header[MHEADER_SIZE];
-	int nRet = ReadData(header, MHEADER_SIZE, nPos);
+	AC_BYTE header[ACFS_HEADER_SIZE];
+	int nRet = ReadData(header, ACFS_HEADER_SIZE, nPos);
 	if (nRet != ERROR_SUCCESS)
 	{
 		m_fHeader.Reset();
@@ -182,7 +181,7 @@ int AcFs_mheader::ReadFileHeader(Adesk::Int64 nPos)
 	else
 	{
 		Adesk::UInt32* pHdrByts = (Adesk::UInt32*)header;
-		Adesk::UInt32* pHdrEnd = (Adesk::UInt32*)(header + MHEADER_SIZE);
+		Adesk::UInt32* pHdrEnd = (Adesk::UInt32*)(header + ACFS_HEADER_SIZE);
 		Adesk::UInt32* pMagic = (Adesk::UInt32*)m_magic;
 
 		while (pHdrByts < pHdrEnd)
@@ -197,15 +196,15 @@ int AcFs_mheader::ReadFileHeader(Adesk::Int64 nPos)
 		{
 			nRet = ERROR_SUCCESS;
 
-			m_nUnk40 = m_fHeader.m_nUnk44;		// 196 - 152
-			m_nUnk48 = m_fHeader.m_nUnk52;		// 204 - 152
-			m_nUnk64 = m_fHeader.m_nUnk60;		// 212 - 152
-			m_nUnk68 = m_fHeader.m_nUnk64;		// 216 - 152
-			m_nUnk72 = m_fHeader.m_nUnk68;		// 220 - 152
-			m_nUnk76 = m_fHeader.m_nUnk72;		// 224 - 152
-			m_nUnk80 = m_fHeader.m_nUnk76;		// 228 - 152
-			m_nUnk268 = m_fHeader.m_nUnk96;		// 248 - 152
-			m_nUnk272 = m_fHeader.m_nUnk100;	// 252 - 152
+			m_nUnk40 = m_fHeader.m_nUnk44;					// 196 - 152
+			m_nMBEndAddr = m_fHeader.m_nMBEndAddr;			// 204 - 152
+			m_nNegBlksCount = m_fHeader.m_nNegBlks;			// 212 - 152
+			m_nPosBlksCount = m_fHeader.m_nPosBlks;			// 216 - 152
+			m_nAlignment = m_fHeader.m_nAlignment;			// 220 - 152
+			m_nAlignFileHdrSize = m_fHeader.m_nAlignFHdrSize;		// 224 - 152
+			m_nDoubleAlign = m_fHeader.m_nDoubleAlign;		// 228 - 152
+			m_nPosBlksMaxId = m_fHeader.m_nPosBlksMaxId;	// 248 - 152
+			m_nNegBlksMaxId = m_fHeader.m_nNegBlksMaxId;	// 252 - 152
 		}
 	}
 
@@ -214,40 +213,40 @@ int AcFs_mheader::ReadFileHeader(Adesk::Int64 nPos)
 
 int AcFs_mheader::ReadMemBlks(void)
 {
-	if (0 == m_nUnk64 + m_nUnk68)
+	if (0 == m_nNegBlksCount + m_nPosBlksCount)
 		return ERROR_SUCCESS;
 
-	m_pUnk112 = NULL;
-	m_pUnk120 = NULL;
+	m_pNegBlkHdrs = NULL;
+	m_pPosBlkHdrs = NULL;
 
-	if (m_nUnk68 != 0)
+	if (m_nPosBlksCount != 0)
 	{
-		m_pUnk120 = (AcFs_mbheader**)m_pFsHeap->zalloc(8 * m_nUnk268);
-		if (NULL == m_pUnk120)
+		m_pPosBlkHdrs = (AcFs_mbheader**)m_pFsHeap->zalloc(8 * m_nPosBlksMaxId);
+		if (NULL == m_pPosBlkHdrs)
 			return ERROR_NOT_ENOUGH_MEMORY;
 	}
-	if (m_nUnk64 != 0)
+	if (m_nNegBlksCount != 0)
 	{
-		m_pUnk112 = (AcFs_mbheader**)m_pFsHeap->zalloc(8 * m_nUnk272);
-		if (NULL == m_pUnk112)
+		m_pNegBlkHdrs = (AcFs_mbheader**)m_pFsHeap->zalloc(8 * m_nNegBlksMaxId);
+		if (NULL == m_pNegBlkHdrs)
 			return ERROR_NOT_ENOUGH_MEMORY;
 	}
 
-	Adesk::Int64 nBlksHdrPos = m_fHeader.m_nUnk84 + m_uUnk260 + m_nUnk76;
+	Adesk::Int64 nBlksHdrPos = m_fHeader.m_nBlksHdrOffset + m_uFileHdrAddr + m_nAlignFileHdrSize;
 	AcFsComprHeader comprHdr;
 	int ret = ReadData(&comprHdr, sizeof(comprHdr), nBlksHdrPos);
 	if (ret != ERROR_SUCCESS)
 		return ret;
 
 	Adesk::Int64 nBlksPos = nBlksHdrPos + sizeof(comprHdr);
-	if (comprHdr.uSignature != 0x41630E3B || nBlksPos + comprHdr.uComprSize > m_nUnk48 || comprHdr.uComprSize < 0)
+	if (comprHdr.uSignature != MEMBLKS_HEADER_SIGN || nBlksPos + comprHdr.nComprSize > m_nMBEndAddr || comprHdr.nComprSize < 0)
 		return ERROR_FILE_CORRUPT;
 	
-	AC_BYTE* pMemBlks = (AC_BYTE*)malloc(comprHdr.uComprSize);
+	AC_BYTE* pMemBlks = (AC_BYTE*)malloc(comprHdr.nComprSize);
 	if (NULL == pMemBlks)
 		return ERROR_NOT_ENOUGH_MEMORY;
 
-	ret = ReadData(pMemBlks, comprHdr.uComprSize, nBlksPos);
+	ret = ReadData(pMemBlks, comprHdr.nComprSize, nBlksPos);
 	if (ret != ERROR_SUCCESS)
 	{
 		free(pMemBlks);
@@ -258,7 +257,7 @@ int AcFs_mheader::ReadMemBlks(void)
 	comprHdr.uCheckSum = 0;
 
 	Adesk::UInt32 uAdler32 = lzo_adler32(0, (const lzo_bytep)&comprHdr, sizeof(comprHdr));
-	if (uHeaderSum != lzo_adler32(uAdler32, pMemBlks, comprHdr.uComprSize))
+	if (uHeaderSum != lzo_adler32(uAdler32, pMemBlks, comprHdr.nComprSize))
 	{
 		free(pMemBlks);
 		return ERROR_FILE_CORRUPT;
@@ -272,7 +271,7 @@ int AcFs_mheader::ReadMemBlks(void)
 	}
 
 	lzo_uint uDecprSize = comprHdr.uDecomprSize;
- 	int nRet = lzo1y_decompress(pMemBlks, comprHdr.uComprSize, pDecomprData, &uDecprSize, NULL);
+ 	int nRet = lzo1y_decompress(pMemBlks, comprHdr.nComprSize, pDecomprData, &uDecprSize, NULL);
 	free(pMemBlks);
 	if (nRet != 0)
 	{
@@ -283,18 +282,18 @@ int AcFs_mheader::ReadMemBlks(void)
 	AC_BYTE* pStream = pDecomprData;
 	AcFs_mbheader* pLastHdr = NULL;
 	Adesk::Int32 i = 0;
-	Adesk::Int64 nUnk60 = 0;
-	while (i < (m_nUnk64 + m_nUnk68))
+	Adesk::Int64 nOffset = 0;
+	while (i < (m_nNegBlksCount + m_nPosBlksCount))
 	{
 		AcFs_mbheader* pBlkHdr = (AcFs_mbheader*)malloc(sizeof(AcFs_mbheader));
-		Adesk::Int32 unk = *(Adesk::Int32*)pStream;
+		Adesk::Int32 nBlkHdrId = *(Adesk::Int32*)pStream;
 		Adesk::Int32* pData32 = (Adesk::Int32*)pStream;
-		if (unk >= 0)
+		if (nBlkHdrId >= 0)
 		{
 			pStream += 8;
 
-			AC_ASSERT(unk > 0);
-			m_pUnk120[unk - 1] = pBlkHdr;
+			AC_ASSERT(nBlkHdrId > 0);
+			m_pPosBlkHdrs[nBlkHdrId - 1] = pBlkHdr;
 			pBlkHdr->pUnk32 = 0;
 			pBlkHdr->pUnk40 = 0;
 			pBlkHdr->pUnk48 = 0;
@@ -304,15 +303,15 @@ int AcFs_mheader::ReadMemBlks(void)
 		{
 			pStream += 24;
 
-			m_pUnk112[-unk - 1] = pBlkHdr;
+			m_pNegBlkHdrs[-nBlkHdrId - 1] = pBlkHdr;
 			pBlkHdr->pUnk32 = (AcFs_mbheader*)(Adesk::IntPtr)pData32[2];
 			pBlkHdr->pUnk40 = (AcFs_mbheader*)(Adesk::IntPtr)pData32[3];
 			pBlkHdr->pUnk48 = (AcFs_mbheader*)(Adesk::IntPtr)pData32[4];
 			pBlkHdr->pUnk56 = (AcFs_mbheader*)(Adesk::IntPtr)pData32[5];
 		}
 
-		pBlkHdr->nUnk28 = pData32[0];
-		pBlkHdr->nUnk24 = pData32[1];
+		pBlkHdr->nBlkId = pData32[0];
+		pBlkHdr->nBlkSize = pData32[1];
 
 		pBlkHdr->pNext = 0;
 		if (pLastHdr != NULL)
@@ -322,18 +321,18 @@ int AcFs_mheader::ReadMemBlks(void)
 		pBlkHdr->pPrev = pLastHdr;
 		pLastHdr = pBlkHdr;
 
-		pBlkHdr->nUnk16 = nUnk60;
-		nUnk60 += pBlkHdr->nUnk24;
+		pBlkHdr->nOffset = nOffset;
+		nOffset += pBlkHdr->nBlkSize;
 		++i;
 	}
 
 	m_pMemBlkTail = pLastHdr;
 
-	if (m_pUnk112 != NULL)
+	if (m_pNegBlkHdrs != NULL)
 	{
-		for (Adesk::Int32 i = 0; i < m_nUnk272; ++i)
+		for (Adesk::Int32 i = 0; i < m_nNegBlksMaxId; ++i)
 		{
-			AcFs_mbheader* pBlkHdr = m_pUnk112[i];
+			AcFs_mbheader* pBlkHdr = m_pNegBlkHdrs[i];
 			if (pBlkHdr != NULL)
 			{
 				pBlkHdr->pUnk32 = ConvertID((int)pBlkHdr->pUnk32);
@@ -344,11 +343,11 @@ int AcFs_mheader::ReadMemBlks(void)
 		}
 	}
 
-	m_pUnk0 = ConvertID(m_fHeader.m_nUnk24);
-	m_pUnk8 = ConvertID(m_fHeader.m_nUnk28);
-	m_pUnk16 = ConvertID(m_fHeader.m_nUnk32);
-	m_pUnk104 = ConvertID(m_fHeader.m_nUnk80);
-	m_pUnk144 = ConvertID(m_fHeader.m_nUnk92);
+	m_pUnkHdr0 = ConvertID(m_fHeader.m_nUnk24);
+	m_pUnkHdr8 = ConvertID(m_fHeader.m_nUnk28);
+	m_pUnkHdr16 = ConvertID(m_fHeader.m_nUnk32);
+	m_pBlksInfoHdr = ConvertID(m_fHeader.m_nBlksInfoBlkId);
+	m_pStrmsBlkHdr = ConvertID(m_fHeader.m_nStreamsBlkId);
 
 	free(pDecomprData);
 
@@ -360,40 +359,40 @@ AcFs_mbheader* AcFs_mheader::ConvertID(int id)
 	if (0 == id)
 		return NULL;
 	else if (id > 0)
-		return m_pUnk120[id - 1];
+		return m_pPosBlkHdrs[id - 1];
 	else
-		return m_pUnk112[-id - 1];
+		return m_pNegBlkHdrs[-id - 1];
 }
 
 void AcFs_mheader::FreeXlat(void)
 {
-	if (m_pUnk112 != NULL)
+	if (m_pNegBlkHdrs != NULL)
 	{
-		free(m_pUnk112);
-		m_pUnk112 = NULL;
+		free(m_pNegBlkHdrs);
+		m_pNegBlkHdrs = NULL;
 	}
-	if (m_pUnk120 != NULL)
+	if (m_pPosBlkHdrs != NULL)
 	{
-		free(m_pUnk120);
-		m_pUnk120 = NULL;
+		free(m_pPosBlkHdrs);
+		m_pPosBlkHdrs = NULL;
 	}
 }
 
 void AcFs_mheader::GetAcFsInfo(AcFs_INFO_t* pInfo)
 {
-	pInfo->uUnk40 = m_nUnk72;
-	pInfo->uUnk0 = m_nUnk48;
-	pInfo->nUnk32 = m_nUnk68;
-	pInfo->pUnk16 = NULL;
-	pInfo->pUnk24 = NULL;
-	pInfo->nUnk36 = m_nUnk64;
+	pInfo->nAlignment = m_nAlignment;
+	pInfo->nMemBlkEndAddr = m_nMBEndAddr;
+	pInfo->nPosBlkCount = m_nPosBlksCount;
+	pInfo->nTotalPosBlkSize = 0;
+	pInfo->nTotalNegBlkSize = 0;
+	pInfo->nNegBlkCount = m_nNegBlksCount;
 
 	for (AcFs_mbheader* pmbheader = m_pMemBlkHead; pmbheader; pmbheader = pmbheader->pNext)
 	{
-		if (pmbheader->nUnk28 >= 0)
-			pInfo->pUnk16 += pmbheader->nUnk24;
+		if (pmbheader->nBlkId >= 0)
+			pInfo->nTotalPosBlkSize += pmbheader->nBlkSize;
 		else
-			pInfo->pUnk24 += pmbheader->nUnk24;
+			pInfo->nTotalNegBlkSize += pmbheader->nBlkSize;
 	}
 }
 

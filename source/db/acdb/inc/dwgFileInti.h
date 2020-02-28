@@ -28,8 +28,8 @@ public:
 	virtual Adesk::Int64 getObjectSectionSize(void) = 0;		// 320//140h
 	virtual AcDbFastDwgFiler* fastDwgFiler(void) = 0;			// 328//148h
 	virtual Acad::ErrorStatus setFileTime(const FILETIME*, const FILETIME*, const FILETIME*) = 0;	// 336//150h
-	virtual void setSignatureInfo(unsigned int) = 0;			// 344//158h
-	virtual void setPasswordInfo(unsigned int) = 0;				// 352//160h
+	virtual void setSignatureInfo(Adesk::Boolean) = 0;			// 344//158h
+	virtual void setPasswordInfo(Adesk::Boolean) = 0;			// 352//160h
 	virtual Acad::ErrorStatus seekFile(Adesk::Int64, int) = 0;	// 360//168h
 	virtual Adesk::Int64 getFilePointer(void) = 0;				// 368//170h
 	virtual Adesk::UInt64 readBinaryBytes(void*, Adesk::UInt64) = 0;	// 376//178h

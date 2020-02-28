@@ -15,13 +15,13 @@ public:
 	void GetName(ACHAR*);
 
 public:
-	Adesk::Int64	m_nUnk0;						// 0//0h
-	Adesk::Int32	m_nUnk8;						// 8//8h
-	Adesk::Int32	m_nUnk12;						// 12//Ch
-	Adesk::Int32	m_nUnk16;						// 16//10h
-	Adesk::Int32	m_nUnk20;						// 20//14h
-	Adesk::Int32	m_nUnk24;						// 24//18h
-	Adesk::Int32	m_nUnk28;						// 28//1Ch
+	Adesk::UInt64	m_uFileSize;					// 0//0h
+	Adesk::Int32	m_nNodeCount;					// 8//8h
+	Adesk::UInt32	m_uBlockSize;					// 12//Ch
+	Adesk::Int32	m_nComprLevel;					// 16//10h
+	Adesk::Int32	m_nComprType;					// 20//14h
+	Adesk::Int32	m_nStreamId;					// 24//18h
+	Adesk::UInt32	m_uAppFlags;					// 28//1Ch
 	char			m_szName[MAX_STREAM_NAME_LEN];	// 32//20h
 };
 

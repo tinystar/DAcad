@@ -43,14 +43,14 @@ DwgFileIntAcFs::DwgFileIntAcFs()
 	, m_pFileName(NULL)
 	, m_pTmpFile(NULL)
 	, m_nCurSection(-1)
-	, m_nUnk204(0)
-	, m_nUnk208(-1)
-	, m_uUnk212(4)
-	, m_uUnk232(0)
-	, m_uUnk236(0)
-	, m_bUnk256(false)
+	, m_nObjSecDepth(0)
+	, m_nSecReadState(-1)
+	, m_uAcFsVer(4)
+	, m_bPassword(Adesk::kFalse)
+	, m_bSignature(Adesk::kFalse)
+	, m_bNeedsRecovery(false)
 	, m_bCrashSave(false)
-	, m_bUnk258(false)
+	, m_bWriteable(false)
 	, m_pCurFsStream(NULL)
 	, m_pHdrStream(NULL)
 	, m_pAuxHdrStream(NULL)
@@ -79,7 +79,7 @@ DwgFileIntAcFs::~DwgFileIntAcFs()
 
 bool DwgFileIntAcFs::isWriteable(void)
 {
-	return m_bUnk258;
+	return m_bWriteable;
 }
 
 const ACHAR* DwgFileIntAcFs::getFileName(void)
@@ -115,7 +115,7 @@ Acad::ErrorStatus DwgFileIntAcFs::getFileTime(FILETIME* pTime1, FILETIME* pTime2
 
 bool DwgFileIntAcFs::hasPassword(void)
 {
-	return m_uUnk232 != 0;
+	return m_bPassword;
 }
 
 bool DwgFileIntAcFs::hasSignature(void)
@@ -126,7 +126,7 @@ bool DwgFileIntAcFs::hasSignature(void)
 
 bool DwgFileIntAcFs::needsRecovery(void)
 {
-	return m_bUnk256;
+	return m_bNeedsRecovery;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::testPassword(const SecurityParams&)
@@ -217,13 +217,13 @@ Acad::ErrorStatus DwgFileIntAcFs::initForReading(const ACHAR* fileName,
 
 	m_AccessMode = desiredAccess;
 	m_ShareMode = shareMode;
-	m_bUnk258 = (desiredAccess >> 30) & 1;
+	m_bWriteable = (desiredAccess & GENERIC_WRITE) != 0;
 
 	setAcFsVer();
 	setupAcFs(m_pAcFs);
 
 	m_hFile = hFile;
-	int nErrCode = m_pAcFs->OpenUsing(hFile, shareMode);		// 16
+	int nErrCode = m_pAcFs->OpenUsing(hFile, desiredAccess);		// 16
 	if (nErrCode != 0)
 	{
 		if (NULL == pUnkFunc)
@@ -288,11 +288,11 @@ Acad::ErrorStatus DwgFileIntAcFs::initForReading(const ACHAR* fileName,
 
 	for (StreamDescriptor* pSection = smDefaultStreams; ; ++pSection)
 	{
-		const ACHAR* pSecName = pSection->pSectionName;
-		if (NULL == pSecName)
+		const ACHAR* pStreamName = pSection->pStreamName;
+		if (NULL == pStreamName)
 			break;
 
-		if (m_pAcFs->OpenStream(pSecName, 0, STREAM_OF_SEC(pSection)))
+		if (m_pAcFs->OpenStream(pStreamName, 0, STREAM_OF_SEC(pSection)))
 		{
 			if ((AC_BYTE)pSection->uUnknown20 & 4)
 			{
@@ -313,9 +313,10 @@ Acad::ErrorStatus DwgFileIntAcFs::initForReading(const ACHAR* fileName,
 
 	m_pFileName = acStrdup(fileName);
 	m_pCurFsStream = NULL;
-	m_bUnk256 = szHeader[21] == -52;
-	m_uUnk232 = ((Adesk::UInt32*)szHeader)[6];
-	m_uUnk236 = ((Adesk::UInt32*)szHeader)[7];
+	m_bNeedsRecovery = szHeader[21] == -52;
+	Adesk::UInt32* pHeader32 = (Adesk::UInt32*)szHeader;
+	m_bPassword = (Adesk::Boolean)(pHeader32[6]);
+	m_bSignature = (Adesk::Boolean)(pHeader32[7]);
 
 	return Acad::eOk;
 }
@@ -338,7 +339,7 @@ Acad::ErrorStatus DwgFileIntAcFs::openForWrite(const ACHAR* pFileName)
 	m_ShareMode = 0;
 	setAcFsVer();
 	setupAcFs(m_pAcFs);
-	m_bUnk258 = true;
+	m_bWriteable = true;
 	m_pFileName = acStrdup(pFileName);
 	SetLastError(0);
 	m_hFile = CreateFile(pFileName, GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -367,12 +368,12 @@ Acad::ErrorStatus DwgFileIntAcFs::openForWrite(const ACHAR* pFileName)
 		return DbUtil::win32ToAcadError(errCode);
 	}
 
-	for (StreamDescriptor* pSection = smDefaultStreams; pSection->pSectionName; ++pSection)
+	for (StreamDescriptor* pSection = smDefaultStreams; pSection->pStreamName; ++pSection)
 	{
 		if (pSection->uUnknown20 & 2)
 		{
 			int unk = pSection->uUnknown24;
-			if (m_uUnk212 < 6)
+			if (m_uAcFsVer < 6)
 				unk = 0;
 			errCode = createStream(pSection, unk);
 			if (errCode)
@@ -402,14 +403,14 @@ Acad::ErrorStatus DwgFileIntAcFs::setFileTime(const FILETIME* pTime1, const FILE
 	return DbUtil::win32ToAcadError(nRet);
 }
 
-void DwgFileIntAcFs::setSignatureInfo(unsigned int info)
+void DwgFileIntAcFs::setSignatureInfo(Adesk::Boolean info)
 {
-	m_uUnk236 = info;
+	m_bSignature = info;
 }
 
-void DwgFileIntAcFs::setPasswordInfo(unsigned int info)
+void DwgFileIntAcFs::setPasswordInfo(Adesk::Boolean info)
 {
-	m_uUnk232 = info;
+	m_bPassword = info;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::seekFile(Adesk::Int64 offset, int method)
@@ -452,14 +453,14 @@ Acad::ErrorStatus DwgFileIntAcFs::flushAndCheckForWriteErrors(void)
 Acad::ErrorStatus DwgFileIntAcFs::startSectionRead(int sectionId)
 {
 	m_nCurSection = sectionId;
-	m_nUnk208 = 0;
+	m_nSecReadState = 0;
 	return seekToSection(sectionId, 0);
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::endSectionRead(void)
 {
 	m_nCurSection = -1;
-	m_nUnk208 = -1;
+	m_nSecReadState = -1;
 	return seekToSection(-1, 0);
 }
 
@@ -494,23 +495,23 @@ void* DwgFileIntAcFs::getCurrentAcFsStream(void)
 
 Acad::ErrorStatus DwgFileIntAcFs::pushObjectSectionRead(void)
 {
-	if (0 == m_nUnk204)
+	if (0 == m_nObjSecDepth)
 	{
-		m_nUnk208 = 0;
+		m_nSecReadState = 0;
 		m_pCurFsStream = m_pObjsStream;
 		m_nCurSection = kSecObjects;
 	}
-	++m_nUnk204;
+	++m_nObjSecDepth;
 	return Acad::eOk;
 }
 
 Acad::ErrorStatus DwgFileIntAcFs::popObjectSectionRead(void)
 {
-	--m_nUnk204;
-	if (0 == m_nUnk204)
+	--m_nObjSecDepth;
+	if (0 == m_nObjSecDepth)
 	{
 		m_nCurSection = -1;
-		m_nUnk208 = -1;
+		m_nSecReadState = -1;
 		m_pCurFsStream = NULL;
 	}
 	return Acad::eOk;
@@ -588,7 +589,7 @@ bool DwgFileIntAcFs::sectionExists(int sectionId)
 		AcFsStream* pStream = *ppStream;
 		if (NULL == pStream)
 		{
-			m_pAcFs->OpenStream(smDefaultStreams[sectionId - 1].pSectionName, 0, ppStream);		// 280
+			m_pAcFs->OpenStream(smDefaultStreams[sectionId - 1].pStreamName, 0, ppStream);		// 280
 			pStream = *ppStream;
 		}
 
@@ -654,12 +655,12 @@ void DwgFileIntAcFs::setAcFsVer(void)
 	AcDb::MaintenanceReleaseVersion maintVer;
 	getDwgVersion(ver, maintVer);		// 80
 	if (ver <= AcDb::kDHL_1021)
-		m_uUnk212 = 6;
+		m_uAcFsVer = 6;
 }
 
 void DwgFileIntAcFs::setupAcFs(AcFs*& pAcFs)
 {
-	if (4 == m_uUnk212)
+	if (4 == m_uAcFsVer)
 		pAcFs = AcFsNewClass();
 	else
 		pAcFs = AcFs6NewClass();
@@ -667,7 +668,7 @@ void DwgFileIntAcFs::setupAcFs(AcFs*& pAcFs)
 	pAcFs->SetPrivateHeaderSize(128);		// 208
 	pAcFs->SetCompressionType(2);			// 128
 	pAcFs->SetCompressionLevel(1);			// 144
-	pAcFs->SetBlockSize(m_uUnk212 > 5 ? 63488 : 29696);		// 160
+	pAcFs->SetBlockSize(m_uAcFsVer > 5 ? 63488 : 29696);		// 160
 	pAcFs->SetAlignment(32);				// 176
 	pAcFs->SetMaxCache(0x400000);			// 168
 }
@@ -682,7 +683,7 @@ void DwgFileIntAcFs::freeDeadAcFs(void)
 	//	AcFs6DeleteClass(m_pAcFs);
 	//else
 	//	AcFsDeleteClass(m_pAcFs);
-	if (6 == m_uUnk212)
+	if (6 == m_uAcFsVer)
 		AcFs6DeleteClass(m_pAcFs);
 	else
 		AcFsDeleteClass(m_pAcFs);
@@ -692,21 +693,21 @@ void DwgFileIntAcFs::freeDeadAcFs(void)
 Acad::ErrorStatus DwgFileIntAcFs::verifyDwgShareMode(unsigned int desiredAccess, unsigned int shareMode)
 {
 	unsigned int uShareMode = getDwgShareMode();	// 256
-	if (!(desiredAccess & 0x40000000))
+	if (!(desiredAccess & GENERIC_WRITE))
 	{
-		if (!(uShareMode & 1))
+		if (!(uShareMode & FILE_SHARE_READ))
 		{
-			return (Acad::ErrorStatus)(((desiredAccess & 0x40000000) >> 30) + 501);
+			return (desiredAccess & GENERIC_WRITE) ? Acad::eDwgShareWriteAccess : Acad::eDwgShareReadAccess;
 		}
 	}
-	else if ((uShareMode & 3) != 3)
+	else if ((uShareMode & (FILE_SHARE_READ | FILE_SHARE_WRITE)) != (FILE_SHARE_READ | FILE_SHARE_WRITE))
 	{
-		return (Acad::ErrorStatus)(((desiredAccess & 0x40000000) >> 30) + 501);
+		return (desiredAccess & GENERIC_WRITE) ? Acad::eDwgShareWriteAccess : Acad::eDwgShareReadAccess;
 	}
 
-	if (shareMode & 2)
+	if (shareMode & FILE_SHARE_WRITE)
 		return Acad::eOk;
-	else if (uShareMode & 4)
+	else if (uShareMode & FILE_SHARE_DELETE)
 		return Acad::eOk;
 	else
 		return Acad::eDwgShareDemandLoad;

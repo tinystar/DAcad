@@ -9,13 +9,13 @@ AcFs_fstream::AcFs_fstream()
 
 void AcFs_fstream::Reset(void)
 {
-	m_nUnk0 = 0;
-	m_nUnk8 = 0;
-	m_nUnk12 = 29696;
-	m_nUnk16 = 1;
-	m_nUnk20 = 2;
-	m_nUnk24 = 0;
-	m_nUnk28 = 0;
+	m_uFileSize = 0;
+	m_nNodeCount = 0;
+	m_uBlockSize = 29696;
+	m_nComprLevel = 1;
+	m_nComprType = 2;
+	m_nStreamId = 0;
+	m_uAppFlags = 0;
 	m_szName[0] = 0;
 }
 

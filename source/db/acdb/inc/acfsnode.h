@@ -5,12 +5,16 @@
 
 class AcFs_mbheader;
 
+#pragma pack (push, 1)
+
 class AcFs_fnode
 {
 public:
 	Adesk::Int32		m_blkId;	// 0
 	Adesk::Int32		m_nUnk4;	// 4
 };
+
+#pragma pack (pop)
 
 // sizeof = 56
 class AcFs_mnode

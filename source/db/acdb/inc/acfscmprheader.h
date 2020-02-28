@@ -9,14 +9,14 @@ struct AcFsComprHeader
 {
 	Adesk::UInt32	uSignature;		// 0
 	Adesk::UInt32	uDecomprSize;	// 4
-	Adesk::UInt32	uComprSize;		// 8
+	Adesk::Int32	nComprSize;		// 8
 	Adesk::UInt32	uUnk12;			// 12
 	Adesk::UInt32	uCheckSum;		// 16
 
 	AcFsComprHeader()
 		: uSignature(0)
 		, uDecomprSize(0)
-		, uComprSize(0)
+		, nComprSize(0)
 		, uUnk12(2)
 		, uCheckSum(0)
 	{}

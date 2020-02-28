@@ -1,6 +1,11 @@
 #ifndef _ACFS_DEFS_H_
 #define _ACFS_DEFS_H_
 
+static const int ACFS_HEADER_SIZE = 108;	// 0x6C
+
+#define MEMBLKS_HEADER_SIGN		0x41630E3B
+#define STRMBLK_HEADER_SIGN		0x4163003B
+
 #define ACFS_STREAM_HEADER				ACRX_T("AcDb:Header")
 #define ACFS_STREAM_AUXHEADER			ACRX_T("AcDb:AuxHeader")
 #define ACFS_STREAM_CLASSES				ACRX_T("AcDb:Classes")
@@ -44,15 +49,15 @@ enum DwgSectionId
 
 struct AcFs_INFO_t
 {
-	Adesk::Int64	uUnk0;		// 0
-	Adesk::UInt64	uSize;		// 8
-	Adesk::Int64	pUnk16;		// 16
-	Adesk::Int64	pUnk24;		// 24
-	Adesk::Int32	nUnk32;		// 32
-	Adesk::Int32	nUnk36;		// 36
-	Adesk::Int32	uUnk40;		// 40
-	Adesk::Int32	uUnk48;		// 48
-	Adesk::Int32	uUnk52;		// 52
+	Adesk::Int64	nMemBlkEndAddr;		// 0
+	Adesk::UInt64	uTotalSize;			// 8
+	Adesk::Int64	nTotalPosBlkSize;	// 16
+	Adesk::Int64	nTotalNegBlkSize;	// 24
+	Adesk::Int32	nPosBlkCount;		// 32
+	Adesk::Int32	nNegBlkCount;		// 36
+	Adesk::Int32	nAlignment;			// 40
+	Adesk::Int32	nStreamCount;		// 48
+	Adesk::Int32	nAppFlags;			// 52
 };
 
 struct AcFs6_INFO_t
@@ -62,14 +67,14 @@ struct AcFs6_INFO_t
 
 struct AcFs_STREAMINFO_t
 {
-	Adesk::Int64	nUnk0;		// 0
-	Adesk::Int64	nUnk8;		// 8
-	Adesk::UInt64	uUnk16;		// 16
-	int				nUnk24;		// 24
-	int				nUnk28;		// 28
-	Adesk::UInt32	uUnk32;		// 32
-	int				nUnk36;		// 36
-	Adesk::UInt32	uUnk40;		// 40
+	Adesk::Int64	nTotalSize;			// 0
+	Adesk::Int64	nUnk8;				// 8
+	Adesk::UInt64	uFileSize;			// 16
+	int				nComprType;			// 24
+	int				nComprLevel;		// 28
+	Adesk::UInt32	uBlockSize;			// 32
+	int				nStreamId;			// 36
+	Adesk::UInt32	uAppFlags;			// 40
 	ACHAR			szStreamName[MAX_STREAM_NAME_LEN];	// 44
 };
 

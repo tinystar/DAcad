@@ -76,14 +76,12 @@ public:
 	void lock() { EnterCriticalSection(&m_cs); }
 	void unlock() { LeaveCriticalSection(&m_cs); }
 
-	AcFsTempBuff& getTempBuff464() { return m_BuffUnk464; }
-	AcFsTempBuff& getTempBuff488() { return m_BuffUnk488; }
+	AcFsTempBuff& getErrorTempBuff() { return m_ErrorTempBuff; }
+	AcFsTempBuff& getOriginalFileBuff() { return m_OrgFileBuff; }
 
 	AcFs_mheader* getAcFsmheader() const { return m_pMHeader; }
 
 	int uncompress(void*, Adesk::UInt32*, const void*, Adesk::UInt32, int);
-
-	void setUnk584(Adesk::UInt32 val) { m_uUnk584 = val; }
 
 protected:
 	int iCreateFile(const void*, unsigned int, unsigned int, unsigned int, 
@@ -106,8 +104,8 @@ protected:
 	int iFlush(bool);
 
 protected:
-	Adesk::Int32		m_nUnk8;			// 8//8h
-	AcFsIStream			m_stream1;			// 16//10h
+	Adesk::Int32		m_nStreamCount;		// 8//8h
+	AcFsIStream			m_DefStream;		// 16//10h
 // 		AcFsIStream*		m_pNextStream;		// 16 + 8 = 24
 // 		AcFsIStream*		m_pPrevStream;		// 16 + 16 = 32
 //		AcFsI*				m_pAcFsI;			// 16 + 24 = 40
@@ -127,20 +125,20 @@ protected:
 // 		AcFsHeap*			m_pFsHeap;			// 16 + 416 = 432
 	AcFs_mheader*		m_pMHeader;			// 448//1C0h
 	int					m_nMaxCache;		// 456//1C8h
-	AcFsTempBuff		m_BuffUnk464;		// 464//1D0h
-	AcFsTempBuff		m_BuffUnk488;		// 488//1E8h
+	AcFsTempBuff		m_ErrorTempBuff;	// 464//1D0h
+	AcFsTempBuff		m_OrgFileBuff;		// 488//1E8h
 	AcFsTempBuff		m_BuffUnk512;		// 512//200h
 	AcFsTempBuff		m_BuffUnk536;		// 536//218h
-	Adesk::UInt32		m_uUnk560;			// 560//230h
+	Adesk::UInt32		m_uBlockSize;		// 560//230h
 	int					m_nComprType;		// 564//234h
-	Adesk::Int32		m_nUnk568;			// 568//238h
-	Adesk::Int32		m_nUnk572;			// 572//23Ch
+	Adesk::Int32		m_nAlignment;		// 568//238h
+	Adesk::Int32		m_nDoubleAlign;		// 572//23Ch
 	Adesk::UInt32		m_uAccessMode;		// 576//240h
 	Adesk::UInt32		m_uPrivtHdrSize;	// 580//244h
 	Adesk::UInt32		m_uUnk584;			// 584//248h
 	CRITICAL_SECTION	m_cs;				// 592//250h
 	AcFsCallBack*		m_pCallback;		// 656//290h
-	Adesk::Int32		m_nUnk664;			// 664//298h
+	Adesk::Int32		m_nAppFlags;		// 664//298h
 	Adesk::Int32		m_nUnk668;			// 668//29Ch
 	AcFsHeap*			m_pFsHeap;			// 672//2A0h
 };

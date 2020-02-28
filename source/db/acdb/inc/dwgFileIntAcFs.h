@@ -9,7 +9,7 @@ class AcFsStream;
 
 struct StreamDescriptor
 {
-	const ACHAR*	pSectionName;
+	const ACHAR*	pStreamName;
 	Adesk::ULongPtr	uStreamOffset;
 	Adesk::UInt32	uUnknown16;
 	Adesk::UInt32	uUnknown20;
@@ -59,8 +59,8 @@ protected:
 	virtual Adesk::Int64 getObjectSectionSize(void);		// 320//140h
 	virtual AcDbFastDwgFiler* fastDwgFiler(void);			// 328//148h
 	virtual Acad::ErrorStatus setFileTime(const FILETIME*, const FILETIME*, const FILETIME*);	// 336//150h
-	virtual void setSignatureInfo(unsigned int);			// 344//158h
-	virtual void setPasswordInfo(unsigned int);				// 352//160h
+	virtual void setSignatureInfo(Adesk::Boolean);			// 344//158h
+	virtual void setPasswordInfo(Adesk::Boolean);			// 352//160h
 	virtual Acad::ErrorStatus seekFile(Adesk::Int64, int);	// 360//168h
 	virtual Adesk::Int64 getFilePointer(void);				// 368//170h
 	virtual Adesk::UInt64 readBinaryBytes(void*, Adesk::UInt64);	// 376//178h
@@ -113,14 +113,14 @@ protected:
 	ACHAR*			m_pFileName;		// 184
 	ACHAR*			m_pTmpFile;			// 192
 	int				m_nCurSection;		// 200
-	int				m_nUnk204;			// 204
-	int				m_nUnk208;			// 208
-	Adesk::UInt32	m_uUnk212;			// 212
-	Adesk::UInt32	m_uUnk232;			// 232
-	Adesk::UInt32	m_uUnk236;			// 236
-	bool			m_bUnk256;			// 256
+	int				m_nObjSecDepth;		// 204
+	int				m_nSecReadState;	// 208
+	Adesk::UInt32	m_uAcFsVer;			// 212
+	Adesk::Boolean	m_bPassword;		// 232
+	Adesk::Boolean	m_bSignature;		// 236
+	bool			m_bNeedsRecovery;	// 256
 	bool			m_bCrashSave;		// 257
-	bool			m_bUnk258;			// 258
+	bool			m_bWriteable;		// 258
 	AcFsStream*		m_pCurFsStream;		// 264
 
 	AcFsStream*		m_pHdrStream;		// 272

@@ -14,9 +14,9 @@ AcFsI::AcFsI(AcFsHeap* pHeap)
 	, m_pMHeader(NULL)
 	, m_pCallback(NULL)
 {
-	m_stream1.m_pFsHeap = m_pFsHeap;
-	m_BuffUnk464.m_pFsHeap = m_pFsHeap;
-	m_BuffUnk488.m_pFsHeap = m_pFsHeap;
+	m_DefStream.m_pFsHeap = m_pFsHeap;
+	m_ErrorTempBuff.m_pFsHeap = m_pFsHeap;
+	m_OrgFileBuff.m_pFsHeap = m_pFsHeap;
 	m_BuffUnk512.m_pFsHeap = m_pFsHeap;
 	m_BuffUnk536.m_pFsHeap = m_pFsHeap;
 
@@ -42,12 +42,12 @@ int AcFsI::CreateFile(const wchar_t*, unsigned int, unsigned int, unsigned int, 
 	return -1;
 }
 
-int AcFsI::OpenUsing(HANDLE hFile, unsigned int uUnk)
+int AcFsI::OpenUsing(HANDLE hFile, unsigned int desiredAccess)
 {
 	if (NULL == hFile)
 		return ERROR_INVALID_PARAMETER;
 
-	return iCreateFile(NULL, uUnk, 0, 0, 0, false, hFile, 0);
+	return iCreateFile(NULL, desiredAccess, 0, 0, 0, false, hFile, 0);
 }
 
 int AcFsI::OpenUsing(AcStream*, unsigned int)
@@ -129,7 +129,7 @@ int AcFsI::ReadFile(void* pBytes, Adesk::UInt64* pLength)
 	if (NULL == m_pMHeader)
 		return ERROR_INVALID_HANDLE;
 
-	return m_stream1.ReadFile(pBytes, pLength);
+	return m_DefStream.ReadFile(pBytes, pLength);
 }
 
 int AcFsI::SetFilePointer(Adesk::Int64 nOffset, unsigned int method)
@@ -137,7 +137,7 @@ int AcFsI::SetFilePointer(Adesk::Int64 nOffset, unsigned int method)
 	if (NULL == m_pMHeader)
 		return ERROR_INVALID_HANDLE;
 
-	return m_stream1.SetFilePointer(nOffset, method);
+	return m_DefStream.SetFilePointer(nOffset, method);
 }
 
 int AcFsI::SetEndOfFile(void)
@@ -145,7 +145,7 @@ int AcFsI::SetEndOfFile(void)
 	if (NULL == m_pMHeader)
 		return ERROR_INVALID_HANDLE;
 
-	return m_stream1.SetEndOfFile();
+	return m_DefStream.SetEndOfFile();
 }
 
 int AcFsI::ZeroData(Adesk::UInt64 u1, Adesk::UInt64 u2)
@@ -153,7 +153,7 @@ int AcFsI::ZeroData(Adesk::UInt64 u1, Adesk::UInt64 u2)
 	if (NULL == m_pMHeader)
 		return ERROR_INVALID_HANDLE;
 
-	return m_stream1.ZeroData(u1, u2);
+	return m_DefStream.ZeroData(u1, u2);
 }
 
 int AcFsI::GetFilePointer(Adesk::UInt64* pFilePos)
@@ -161,7 +161,7 @@ int AcFsI::GetFilePointer(Adesk::UInt64* pFilePos)
 	if (NULL == m_pMHeader)
 		return ERROR_INVALID_HANDLE;
 
-	return m_stream1.GetFilePointer(pFilePos);
+	return m_DefStream.GetFilePointer(pFilePos);
 }
 
 int AcFsI::GetFileSize(Adesk::UInt64* pFileSize)
@@ -169,7 +169,7 @@ int AcFsI::GetFileSize(Adesk::UInt64* pFileSize)
 	if (NULL == m_pMHeader)
 		return ERROR_INVALID_HANDLE;
 
-	return m_stream1.GetFileSize(pFileSize);
+	return m_DefStream.GetFileSize(pFileSize);
 }
 
 void AcFsI::SetCompressionType(int nType)
@@ -179,7 +179,7 @@ void AcFsI::SetCompressionType(int nType)
 		if (nType <= 2)
 		{
 			m_nComprType = nType;
-			m_stream1.m_nComprType = nType;
+			m_DefStream.m_nComprType = nType;
 		}
 	}
 }
@@ -191,22 +191,21 @@ int AcFsI::GetCompressionType(void)
 
 void AcFsI::SetCompressionLevel(int level)
 {
-	m_stream1.SetCompressionLevel(level);
+	m_DefStream.SetCompressionLevel(level);
 }
 
 int AcFsI::GetCompressionLevel(void)
 {
-	return m_stream1.GetCompressionLevel();
+	return m_DefStream.GetCompressionLevel();
 }
 
 void AcFsI::SetBlockSize(Adesk::UInt64 uSize)
 {
-	Adesk::UInt64 v2 = (uSize + 127) & 0xFFFFFF80;
-	Adesk::UInt64 result = v2 - 128;
-	if ((unsigned int)result <= 0xFFFF80 && (signed int)v2 >= m_nUnk568 && NULL == m_pMHeader)
+	Adesk::UInt64 uAlignSize = (uSize + 127) & 0xFFFFFF80;	// µÈ¼ÛÓÚ/128
+	if (uAlignSize <= 0x1000000 && (Adesk::Int32)uAlignSize >= m_nAlignment && NULL == m_pMHeader)
 	{
-		m_uUnk560 = v2;
-		m_stream1.m_uBlockSize = v2;
+		m_uBlockSize = uAlignSize;
+		m_DefStream.m_uBlockSize = uAlignSize;
 	}
 }
 
@@ -216,23 +215,21 @@ void AcFsI::SetMaxCache(int nMaxCache)
 		nMaxCache = 0;
 
 	m_nMaxCache = nMaxCache;
-	m_stream1.m_uMaxCache = nMaxCache;
+	m_DefStream.m_uMaxCache = nMaxCache;
 }
 
 void AcFsI::SetAlignment(int align)
 {
-	unsigned int result = (unsigned int)(align - 16);
-	if ((unsigned int)result <= 0xFFFFF0 && align <= m_uUnk560 && NULL == m_pMHeader)
+	if (align <= 0x1000000 && align <= m_uBlockSize && NULL == m_pMHeader)
 	{
-		result = (unsigned int)(2 * align);
-		m_nUnk568 = align;
-		m_nUnk572 = result;
+		m_nAlignment = align;
+		m_nDoubleAlign = 2 * align;
 	}
 }
 
 int AcFsI::GetAlignment(void)
 {
-	return m_nUnk568;
+	return m_nAlignment;
 }
 
 void AcFsI::EnableWriteCache(int)
@@ -242,13 +239,12 @@ void AcFsI::EnableWriteCache(int)
 
 Adesk::UInt64 AcFsI::GetBlockSize(void)
 {
-	return m_uUnk560;
+	return m_uBlockSize;
 }
 
 void AcFsI::SetPrivateHeaderSize(int nSize)
 {
-	Adesk::UInt8 u = ~((Adesk::UInt32)nSize) >> 31;
-	if (NULL == m_pMHeader && u != 0)
+	if (NULL == m_pMHeader && nSize > 0)
 		m_uPrivtHdrSize = nSize;
 }
 
@@ -266,13 +262,13 @@ int AcFsI::GetAcFsInfo(AcFs_INFO_t* pInfo)
 
 	lock();
 
-	pInfo->uSize = 0;
-	pInfo->uUnk48 = m_nUnk8;
-	pInfo->uUnk52 = m_nUnk664;
-	AcFsIStream* pStream = &m_stream1;
-	for (Adesk::Int32 i = 0; i < m_nUnk8; ++i)
+	pInfo->uTotalSize = 0;
+	pInfo->nStreamCount = m_nStreamCount;
+	pInfo->nAppFlags = m_nAppFlags;
+	AcFsIStream* pStream = &m_DefStream;
+	for (Adesk::Int32 i = 0; i < m_nStreamCount; ++i)
 	{
-		pInfo->uSize += pStream->m_uFileSize;
+		pInfo->uTotalSize += pStream->m_uFileSize;
 		pStream = pStream->m_pNextStream;
 	}
 
@@ -293,12 +289,12 @@ int AcFsI::GetStreamInfo(int uStreamId, AcFs_STREAMINFO_t* pStreamInfo)
 {
 	if (NULL == m_pMHeader)
 		return ERROR_INVALID_HANDLE;
-	if (NULL == pStreamInfo || (uStreamId < 0 || uStreamId >= m_nUnk8))
+	if (NULL == pStreamInfo || (uStreamId < 0 || uStreamId >= m_nStreamCount))
 		return ERROR_INVALID_PARAMETER;
 
 	lock();
 
-	AcFsIStream* pStream = &m_stream1;
+	AcFsIStream* pStream = &m_DefStream;
 	for (int i = 0; i < uStreamId && pStream != NULL; ++i)
 		pStream = pStream->m_pNextStream;
 
@@ -412,7 +408,7 @@ void AcFsI::DefineAppFlags(unsigned int, unsigned int)
 
 int AcFsI::GetAppFlags(void)
 {
-	return m_nUnk664;
+	return m_nAppFlags;
 }
 
 void AcFsI::SetKey(const unsigned int*)
@@ -432,12 +428,12 @@ void AcFsI::SetV6StreamCallbackFix(bool)
 
 int AcFsI::GetLastWriteError(void)
 {
-	return m_pMHeader->m_nUnk88;
+	return m_pMHeader->m_nLastWrError;
 }
 
 int AcFsI::GetNumberOfWriteErrors(void)
 {
-	return m_pMHeader->m_nUnk92;
+	return m_pMHeader->m_nNumOfWrErrs;
 }
 
 void AcFsI::SetThreading(int)
@@ -471,15 +467,15 @@ int AcFsI::iCreateFile(const void* pFileName,
 	if (desiredAccess & GENERIC_WRITE)
 		desiredAccess |= GENERIC_READ;
 	m_uAccessMode = desiredAccess;
-	m_pMHeader->m_nUnk72 = m_nUnk568;
-	m_pMHeader->m_nUnk80 = m_nUnk572;
-	m_pMHeader->m_uUnk260 = ((m_uPrivtHdrSize + 127) / 128) << 7;
+	m_pMHeader->m_nAlignment = m_nAlignment;
+	m_pMHeader->m_nDoubleAlign = m_nDoubleAlign;
+	m_pMHeader->m_uFileHdrAddr = ((m_uPrivtHdrSize + 127) / 128) << 7;
 
 	int nRet = m_pMHeader->OpenFile(pFileName, desiredAccess, shareMode, dwCreationDisposition, dwFlagsAndAttributes, bUnicode, hFile, nPos);
 	if (ERROR_SUCCESS == nRet)
 	{
-		m_nUnk568 = m_pMHeader->m_nUnk72;
-		m_nUnk572 = m_pMHeader->m_nUnk80;
+		m_nAlignment = m_pMHeader->m_nAlignment;
+		m_nDoubleAlign = m_pMHeader->m_nDoubleAlign;
 
 		int ret = processLogicalHeaders();
 		if (ERROR_SUCCESS == ret)
@@ -511,8 +507,8 @@ int AcFsI::processLogicalHeaders(void)
 	int ret = ReadHeader();
 	if (ERROR_SUCCESS == ret)
 	{
-		Adesk::UInt32 uBlockSize = m_stream1.m_uBlockSize;
-		AcFsIStream* pStream = m_stream1.m_pNextStream;
+		Adesk::UInt32 uBlockSize = m_DefStream.m_uBlockSize;
+		AcFsIStream* pStream = m_DefStream.m_pNextStream;
 		while (pStream)
 		{
 			if (uBlockSize < pStream->m_uBlockSize)
@@ -528,31 +524,31 @@ int AcFsI::processLogicalHeaders(void)
 int AcFsI::ReadHeader(void)
 {
 	int nRet = ERROR_SUCCESS;
-	m_nUnk8 = 1;
+	m_nStreamCount = 1;
 	
-	m_stream1.m_uBlockSize = m_uUnk560;
-	m_stream1.m_pAcFsI = this;
-	m_stream1.m_uAcessType = m_uAccessMode;
-	m_stream1.m_uAppFlags = 0;
-	m_stream1.m_pMHeader = m_pMHeader;
+	m_DefStream.m_uBlockSize = m_uBlockSize;
+	m_DefStream.m_pAcFsI = this;
+	m_DefStream.m_uAcessType = m_uAccessMode;
+	m_DefStream.m_uAppFlags = 0;
+	m_DefStream.m_pMHeader = m_pMHeader;
 
-	AcFs_mbheader* pMBHeader = m_pMHeader->m_pUnk144;
-	if (NULL == pMBHeader)
+	AcFs_mbheader* pStreamsBlkHdr = m_pMHeader->m_pStrmsBlkHdr;
+	if (NULL == pStreamsBlkHdr)
 		return ERROR_SUCCESS;
 
 	AcFsComprHeader comprHdr;
-	nRet = m_pMHeader->ReadBlock(pMBHeader, &comprHdr, 0, sizeof(comprHdr));
+	nRet = m_pMHeader->ReadBlock(pStreamsBlkHdr, &comprHdr, 0, sizeof(comprHdr));
 	if (nRet != ERROR_SUCCESS)
 		return nRet;
 
-	if (comprHdr.uSignature != 0x4163003B || comprHdr.uComprSize > pMBHeader->nUnk24)
+	if (comprHdr.uSignature != STRMBLK_HEADER_SIGN || comprHdr.nComprSize > pStreamsBlkHdr->nBlkSize)
 		return ERROR_FILE_CORRUPT;
 
-	AC_BYTE* pComprData = (AC_BYTE*)malloc(comprHdr.uComprSize);
+	AC_BYTE* pComprData = (AC_BYTE*)malloc(comprHdr.nComprSize);
 	if (NULL == pComprData)
 		return ERROR_NOT_ENOUGH_MEMORY;
 
-	nRet = m_pMHeader->ReadBlock(pMBHeader, pComprData, 20, comprHdr.uComprSize);
+	nRet = m_pMHeader->ReadBlock(pStreamsBlkHdr, pComprData, 20, comprHdr.nComprSize);
 	if (nRet != ERROR_SUCCESS)
 	{
 		free(pComprData);
@@ -563,7 +559,7 @@ int AcFsI::ReadHeader(void)
 	comprHdr.uCheckSum = 0;
 
 	Adesk::UInt32 uAdler32 = lzo_adler32(0, (const lzo_bytep)&comprHdr, sizeof(comprHdr));
-	if (uHeaderSum != lzo_adler32(uAdler32, pComprData, comprHdr.uComprSize))
+	if (uHeaderSum != lzo_adler32(uAdler32, pComprData, comprHdr.nComprSize))
 	{
 		free(pComprData);
 		return ERROR_FILE_CORRUPT;
@@ -577,7 +573,7 @@ int AcFsI::ReadHeader(void)
 	}
 
 	lzo_uint uDecprSize = comprHdr.uDecomprSize;
-	nRet = lzo1y_decompress(pComprData, comprHdr.uComprSize, pDecomprData, &uDecprSize, NULL);
+	nRet = lzo1y_decompress(pComprData, comprHdr.nComprSize, pDecomprData, &uDecprSize, NULL);
 	free(pComprData);
 	if (nRet != 0)
 	{
@@ -586,17 +582,17 @@ int AcFsI::ReadHeader(void)
 	}
 
 	Adesk::Int32* pData = (Adesk::Int32*)pDecomprData;
-	m_nUnk8 = *pData++;
+	m_nStreamCount = *pData++;
 	m_nComprType = *pData++;
-	m_uUnk560 = *pData++;
-	m_nUnk664 = *pData++;
+	m_uBlockSize = *pData++;
+	m_nAppFlags = *pData++;
 	m_nUnk668 = *pData++;
 
 	char* pBytes = (char*)pData;
 	AcFsIStream* pLastStream = NULL;
-	AcFsIStream* pIStream = &m_stream1;
+	AcFsIStream* pIStream = &m_DefStream;
 	Adesk::Int32 nIdx = 0;
-	while (nIdx < m_nUnk8 && ERROR_SUCCESS == nRet)
+	while (nIdx < m_nStreamCount && ERROR_SUCCESS == nRet)
 	{
 		AcFs_fstream* pFStream = (AcFs_fstream*)pBytes;
 		pBytes = (char*)(pFStream + 1);
@@ -617,7 +613,7 @@ int AcFsI::ReadHeader(void)
 		pIStream->SetMaxCache(m_nMaxCache);
 		pIStream->m_uAcessType = m_uAccessMode;
 		pIStream->CopyFtoM(this, m_pMHeader, pFStream);
-		pIStream->ReadNodes(&pBytes, pFStream->m_nUnk8);
+		pIStream->ReadNodes(&pBytes, pFStream->m_nNodeCount);
 		pLastStream = pIStream;
 		++nIdx;
 	}
@@ -628,18 +624,18 @@ int AcFsI::ReadHeader(void)
 
 int AcFsI::CheckBlockSize(int nBlockSize)
 {
-	if (nBlockSize > m_BuffUnk464.m_uSize)
+	if (nBlockSize > m_ErrorTempBuff.m_uSize)
 	{
 		int nSize = 2 * ((nBlockSize >> 3) + nBlockSize) + 1024;
-		m_BuffUnk488.SetSize(nSize);
+		m_OrgFileBuff.SetSize(nSize);
 		m_BuffUnk512.SetSize(nSize);
-		m_BuffUnk464.SetSize(nBlockSize);
+		m_ErrorTempBuff.SetSize(nBlockSize);
 
 		ResetAllCachePtrs();
 
-		if (NULL == m_BuffUnk488.m_pBuffer ||
+		if (NULL == m_OrgFileBuff.m_pBuffer ||
 			NULL == m_BuffUnk512.m_pBuffer ||
-			NULL == m_BuffUnk464.m_pBuffer)
+			NULL == m_ErrorTempBuff.m_pBuffer)
 			return ERROR_NOT_ENOUGH_MEMORY;
 	}
 
@@ -648,7 +644,7 @@ int AcFsI::CheckBlockSize(int nBlockSize)
 
 void AcFsI::DeleteMemory(void)
 {
-	AcFsIStream* pStream = &m_stream1;
+	AcFsIStream* pStream = &m_DefStream;
 	while (pStream != NULL)
 	{
 		AcFsIStream* pNextStream = pStream->m_pNextStream;
@@ -659,10 +655,10 @@ void AcFsI::DeleteMemory(void)
 		pStream = pNextStream;
 	}
 
-	m_BuffUnk488.Reset();
+	m_OrgFileBuff.Reset();
 	m_BuffUnk512.Reset();
 	m_BuffUnk536.Reset();
-	m_BuffUnk464.Reset();
+	m_ErrorTempBuff.Reset();
 
 	if (m_pMHeader != NULL)
 	{
@@ -670,13 +666,13 @@ void AcFsI::DeleteMemory(void)
 		m_pMHeader = NULL;
 	}
 
-	m_stream1.Reset();
+	m_DefStream.Reset();
 	Reset();
 }
 
 AcFsIStream* AcFsI::FindStream(const wchar_t* pStreamName, unsigned int uStreamId)
 {
-	AcFsIStream* pStream = &m_stream1;
+	AcFsIStream* pStream = &m_DefStream;
 	for (; pStream != NULL; pStream = pStream->m_pNextStream)
 	{
 		bool bFound = pStreamName && *pStreamName ? 0 == ac_strcmp(pStreamName, pStream->m_szStreamName) : uStreamId == pStream->m_nStreamId;
@@ -689,28 +685,28 @@ AcFsIStream* AcFsI::FindStream(const wchar_t* pStreamName, unsigned int uStreamI
 void AcFsI::Reset(void)
 {
 	m_pMHeader = NULL;
-	m_nUnk8 = 1;
+	m_nStreamCount = 1;
 	m_nMaxCache = 0x200000;
 
-	m_BuffUnk488.Reset();
+	m_OrgFileBuff.Reset();
 	m_BuffUnk512.Reset();
-	m_BuffUnk464.Reset();
+	m_ErrorTempBuff.Reset();
 	m_BuffUnk536.Reset();
 
-	m_nUnk568 = 32;
-	m_nUnk572 = 64;
+	m_nAlignment = 32;
+	m_nDoubleAlign = 64;
 	m_uUnk584 = 0;
-	m_uUnk560 = 29696;
+	m_uBlockSize = 29696;
 	m_nComprType = 2;
 	m_uPrivtHdrSize = 0;
 	m_pCallback = NULL;
-	m_nUnk664 = 0;
+	m_nAppFlags = 0;
 	m_nUnk668 = 1;
 }
 
 void AcFsI::ResetAllCachePtrs(void)
 {
-	AcFsIStream* pStream = &m_stream1;
+	AcFsIStream* pStream = &m_DefStream;
 	for (; pStream != NULL; pStream = pStream->m_pNextStream)
 	{
 		pStream->m_pBufferEnd = NULL;
