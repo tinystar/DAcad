@@ -548,7 +548,7 @@ int AcFsI::ReadHeader(void)
 	if (NULL == pComprData)
 		return ERROR_NOT_ENOUGH_MEMORY;
 
-	nRet = m_pMHeader->ReadBlock(pStreamsBlkHdr, pComprData, 20, comprHdr.nComprSize);
+	nRet = m_pMHeader->ReadBlock(pStreamsBlkHdr, pComprData, sizeof(comprHdr), comprHdr.nComprSize);
 	if (nRet != ERROR_SUCCESS)
 	{
 		free(pComprData);
@@ -711,7 +711,7 @@ void AcFsI::ResetAllCachePtrs(void)
 	{
 		pStream->m_pBufferEnd = NULL;
 		pStream->m_pBufferCur = NULL;
-		pStream->m_bUnk380 = Adesk::kTrue;
+		pStream->m_bEndOfFile = Adesk::kTrue;
 	}
 }
 

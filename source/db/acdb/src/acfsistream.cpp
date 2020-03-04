@@ -8,6 +8,7 @@
 #include "acfsmbheader.h"
 #include "lzo/lzoconf.h"
 #include "cstrop.h"
+#include "acfscmprheader.h"
 
 
 AcFsIStream::AcFsIStream(void)
@@ -95,7 +96,7 @@ int AcFsIStream::SetFilePointer(Adesk::Int64 nOffset, Adesk::UInt32 method)
 		{
 			m_pBufferCur = NULL;
 			m_pBufferEnd = NULL;
-			m_bUnk380 = Adesk::kTrue;
+			m_bEndOfFile = Adesk::kTrue;
 		}
 		else
 		{
@@ -109,12 +110,12 @@ int AcFsIStream::SetFilePointer(Adesk::Int64 nOffset, Adesk::UInt32 method)
 int AcFsIStream::SetEndOfFile(void)
 {
 	int ret = ERROR_ACCESS_DENIED;
-	if (m_uAcessType & 0x40000000)
+	if (m_uAcessType & GENERIC_WRITE)
 	{
 		ret = ERROR_SUCCESS;
 		m_pBufferCur = NULL;
 		m_pBufferEnd = NULL;
-		m_bUnk380 = Adesk::kTrue;
+		m_bEndOfFile = Adesk::kTrue;
 		if (m_uFilePtr < m_uFileSize)
 			ret = ZeroData(m_uFilePtr, m_uFileSize);
 		m_uFileSize = m_uFilePtr;
@@ -125,7 +126,7 @@ int AcFsIStream::SetEndOfFile(void)
 
 int AcFsIStream::ZeroData(Adesk::UInt64 uStartPos, Adesk::UInt64 uEndPos)
 {
-	if (!(m_uAcessType & 0x40000000))
+	if (!(m_uAcessType & GENERIC_WRITE))
 		return ERROR_ACCESS_DENIED;
 	if (uStartPos > uEndPos)
 		return ERROR_INVALID_PARAMETER;
@@ -182,7 +183,7 @@ int AcFsIStream::GetStreamInfo(AcFs_STREAMINFO_t* pInfo)
 	pInfo->uAppFlags = m_uAppFlags;
 	ac_strcpy(pInfo->szStreamName, m_szStreamName);
 	pInfo->nTotalSize = 0;
-	pInfo->nUnk8 = 0;
+	pInfo->nComprSize = 0;
 
 	if (m_pmnodeTable != NULL)
 	{
@@ -195,7 +196,7 @@ int AcFsIStream::GetStreamInfo(AcFs_STREAMINFO_t* pInfo)
 					AcFs_mnode* pmnode = m_pmnodeTable[i] + j;
 					if (pmnode->m_pMbHeader != NULL)
 						pInfo->nTotalSize += pmnode->m_pMbHeader->nBlkSize;
-					pInfo->nUnk8 += pmnode->m_nUnk8;
+					pInfo->nComprSize += pmnode->m_uComprSize;
 				}
 			}
 		}
@@ -255,13 +256,17 @@ int AcFsIStream::GetPhysicalAddr(Adesk::UInt64* pAddr)
 	*pAddr = 0;
 	if (pmnode->m_pMbHeader != NULL)
 	{
-		*pAddr = pmnode->m_pMbHeader->nOffset +
-				 m_pAcFsI->getAcFsmheader()->getFileHeaderAddr() +
-				 m_pAcFsI->getAcFsmheader()->getAlignedFileHdrSize();
+		*pAddr = GetBlockAddress(pmnode->m_pMbHeader);
 		m_bUnk424 = true;
 	}
 
 	return ERROR_SUCCESS;
+}
+
+Adesk::Int64 AcFsIStream::GetBlockAddress(AcFs_mbheader* pHeader)
+{
+	AcFs_mheader* pMHdr = m_pAcFsI->getAcFsmheader();
+	return pHeader->nOffset + pMHdr->getFileHeaderAddr() + pMHdr->getAlignedFileHdrSize();
 }
 
 void AcFsIStream::RegisterCallback(AcFsStreamCallBack pCallback)
@@ -299,12 +304,18 @@ void AcFsIStream::Reset(void)
 	m_nStreamId = 0;
 	m_szStreamName[0] = 0;
 	m_uBlockSize = 29696;
+	m_pBufferCur = NULL;
+	m_pBufferEnd = NULL;
+	m_pLRUHead = NULL;
+	m_pLRUTail = NULL;
 	m_bEnableWrCache = Adesk::kTrue;
+	m_bEndOfFile = Adesk::kTrue;
 	m_uAcessType = 0;
 	m_uMaxCache = 0x200000;
+	m_uCachedSize = 0;
 	m_pCallback = NULL;
 	m_uAppFlags = 0;
-	m_pFsHeap = NULL;
+	m_bUnk424 = false;
 }
 
 void AcFsIStream::CopyFtoM(AcFsI* pAcFsI, AcFs_mheader* pmheader, AcFs_fstream* pfstream)
@@ -323,7 +334,7 @@ void AcFsIStream::CopyFtoM(AcFsI* pAcFsI, AcFs_mheader* pmheader, AcFs_fstream* 
 void AcFsIStream::CopyFNtoMN(AcFs_fnode* pfnode, AcFs_mnode* pmnode)
 {
 	pmnode->m_pMbHeader = m_pMHeader->ConvertID(pfnode->m_blkId);
-	pmnode->m_nUnk8 = pfnode->m_nUnk4;
+	pmnode->m_uComprSize = pfnode->m_uComprSize;
 }
 
 int AcFsIStream::ReadNodes(char** ppBytes, int count)
@@ -390,7 +401,7 @@ int AcFsIStream::GetReadCache(void)
 {
 	if (m_uFilePtr >= m_uFileSize)
 	{
-		m_bUnk380 = Adesk::kTrue;
+		m_bEndOfFile = Adesk::kTrue;
 		m_pBufferCur = NULL;
 		m_pBufferEnd = NULL;
 		return ERROR_HANDLE_EOF;
@@ -402,14 +413,16 @@ int AcFsIStream::GetReadCache(void)
 	Adesk::Int64 nBlockOffset = m_uFilePtr - idx1 * m_uBlockSize * 256 - idx2 * m_uBlockSize;
 	if (idx1 >= m_mnodeTblSize)
 	{
-		m_bUnk380 = Adesk::kTrue;
+		m_bEndOfFile = Adesk::kTrue;
 		m_pBufferCur = m_pAcFsI->getErrorTempBuff().m_pBuffer + nBlockOffset;
+		goto Exit;
 	}
 
 	if (NULL == m_pmnodeTable[idx1])
 	{
-		m_bUnk380 = Adesk::kTrue;
+		m_bEndOfFile = Adesk::kTrue;
 		m_pBufferCur = m_pAcFsI->getErrorTempBuff().m_pBuffer + nBlockOffset;
+		goto Exit;
 	}
 
 	AcFs_mnode* pmnode = m_pmnodeTable[idx1] + idx2;
@@ -420,28 +433,29 @@ int AcFsIStream::GetReadCache(void)
 			int ret = ReadBlock(pmnode);
 			if (ret != ERROR_SUCCESS)
 			{
-				m_bUnk380 = Adesk::kTrue;
+				m_bEndOfFile = Adesk::kTrue;
 				m_pBufferCur = m_pAcFsI->getErrorTempBuff().m_pBuffer + nBlockOffset;
 			}
 			else
 			{
-				m_bUnk380 = Adesk::kFalse;
+				m_bEndOfFile = Adesk::kFalse;
 				m_pBufferCur = pmnode->m_pBuffer + nBlockOffset;
 			}
 		}
 		else
 		{
-			m_bUnk380 = Adesk::kTrue;
+			m_bEndOfFile = Adesk::kTrue;
 			m_pBufferCur = m_pAcFsI->getErrorTempBuff().m_pBuffer + nBlockOffset;
 		}
 	}
 	else
 	{
 		LRUMoveToFront(pmnode);
-		m_bUnk380 = Adesk::kFalse;
+		m_bEndOfFile = Adesk::kFalse;
 		m_pBufferCur = pmnode->m_pBuffer + nBlockOffset;
 	}
 
+Exit:
 	Adesk::UInt64 uRemain = m_uFileSize - m_uFilePtr;
 	if (uRemain > (m_uBlockSize - nBlockOffset))
 		uRemain = m_uBlockSize - nBlockOffset;
@@ -467,23 +481,21 @@ int AcFsIStream::ReadBlock(AcFs_mnode* pmnode)
 	}
 
 	AC_BYTE* pBuffer = m_pAcFsI->getOriginalFileBuff().m_pBuffer;
-	ret = m_pMHeader->ReadBlock(pmnode->m_pMbHeader, pBuffer, 0, pmnode->m_nUnk8 + 32);
-	if (0 == ret)
+	ret = m_pMHeader->ReadBlock(pmnode->m_pMbHeader, pBuffer, 0, pmnode->m_uComprSize + sizeof(AcFsCodedComprHeader));
+	if (ERROR_SUCCESS == ret)
 	{
 		Adesk::UInt32* pUInt32 = (Adesk::UInt32*)pBuffer;
-		Adesk::UInt32 uMask = (pmnode->m_pMbHeader->nOffset + 
-							   m_pAcFsI->getAcFsmheader()->getFileHeaderAddr() +
-							   m_pAcFsI->getAcFsmheader()->getAlignedFileHdrSize()) ^ 0x4164536B;
+		Adesk::UInt32 uMask = (Adesk::UInt32)GetBlockAddress(pmnode->m_pMbHeader) ^ BLOCKHDR_DECODE_MASK;
 
-
-		for (int i = 8; i > 0; --i)
+		for (int i = sizeof(AcFsCodedComprHeader) / sizeof(Adesk::UInt32); i > 0; --i)
 			*pUInt32++ ^= uMask;
 
-		AC_BYTE* pData = pBuffer + 32;
-		Adesk::UInt32 uAdler32 = lzo_adler32(0, pData, pmnode->m_nUnk8);
-		Adesk::UInt32 uSum = *(Adesk::UInt32*)(pBuffer + 24);
-		*(Adesk::UInt32*)(pBuffer + 24) = 0;
-		if (uSum != lzo_adler32(uAdler32, pBuffer, 0x20))
+		AcFsCodedComprHeader* pComprHdr = (AcFsCodedComprHeader*)pBuffer;
+		AC_BYTE* pData = pBuffer + sizeof(AcFsCodedComprHeader);
+		Adesk::UInt32 uAdler32 = lzo_adler32(0, pData, pmnode->m_uComprSize);
+		Adesk::UInt32 uSum = pComprHdr->uCheckSum1;
+		pComprHdr->uCheckSum1 = 0;
+		if (uSum != lzo_adler32(uAdler32, pBuffer, sizeof(AcFsCodedComprHeader)))
 		{
 			m_pAcFsI->unlock();
 			return ERROR_FILE_CORRUPT;
@@ -494,14 +506,14 @@ int AcFsIStream::ReadBlock(AcFs_mnode* pmnode)
 			AC_ASSERT_NOT_IMPLEMENTED();
 		}
 		
-		if (uAdler32 != *(Adesk::UInt32*)(pBuffer + 28))
+		if (uAdler32 != pComprHdr->uCheckSum2)
 		{
 			m_pAcFsI->unlock();
 			return ERROR_FILE_CORRUPT;
 		}
 
 		Adesk::UInt32 uDstLen = m_uBlockSize;
-		ret = m_pAcFsI->uncompress(pmnode->m_pBuffer, &uDstLen, pData, pmnode->m_nUnk8, m_nComprType);
+		ret = m_pAcFsI->uncompress(pmnode->m_pBuffer, &uDstLen, pData, pmnode->m_uComprSize, m_nComprType);
 		if (ret != ERROR_SUCCESS || m_uBlockSize != uDstLen)
 		{
 			m_pAcFsI->unlock();
@@ -528,24 +540,24 @@ int AcFsIStream::WriteBlock(AcFs_mnode*)
 int AcFsIStream::LRUAddToFront(AcFs_mnode* pmnode)
 {
 	int ret = ERROR_SUCCESS;
-	if (m_uUnk392 + m_uBlockSize > m_uMaxCache && m_pMNodeUnk368 != NULL)
+	if (m_uCachedSize + m_uBlockSize > m_uMaxCache && m_pLRUTail != NULL)
 	{
-		if (m_pMNodeUnk368->m_nUnk40)
+		if (m_pLRUTail->m_nUnk40)
 		{
-			ret = WriteBlock(m_pMNodeUnk368);
+			ret = WriteBlock(m_pLRUTail);
 			if (ret != ERROR_SUCCESS)
 				return ret;
 		}
 
-		pmnode->m_pBuffer = m_pMNodeUnk368->m_pBuffer;
-		AcFs_mnode* pTmpNode = m_pMNodeUnk368->m_pUnk24;
-		m_pMNodeUnk368->m_pBuffer = NULL;
-		m_pMNodeUnk368->m_pUnk24 = NULL;
-		m_pMNodeUnk368 = pTmpNode;
-		if (pTmpNode)
-			pTmpNode->m_pUnk32 = NULL;
+		pmnode->m_pBuffer = m_pLRUTail->m_pBuffer;
+		AcFs_mnode* pPrev = m_pLRUTail->m_pPrevNode;
+		m_pLRUTail->m_pBuffer = NULL;
+		m_pLRUTail->m_pPrevNode = NULL;
+		m_pLRUTail = pPrev;
+		if (pPrev)
+			pPrev->m_pNextNode = NULL;
 		else
-			m_pMNodeUnk360 = NULL;
+			m_pLRUHead = NULL;
 	}
 	else
 	{
@@ -553,7 +565,7 @@ int AcFsIStream::LRUAddToFront(AcFs_mnode* pmnode)
 		if (NULL == pmnode->m_pBuffer)
 			return ERROR_NOT_ENOUGH_MEMORY;
 
-		m_uUnk392 += m_uBlockSize;
+		m_uCachedSize += m_uBlockSize;
 	}
 
 	if (NULL == pmnode->m_pMbHeader)
@@ -562,14 +574,14 @@ int AcFsIStream::LRUAddToFront(AcFs_mnode* pmnode)
 			memset(pmnode->m_pBuffer, 0, m_uBlockSize);
 	}
 
-	AcFs_mnode* pmnode1 = m_pMNodeUnk360;
-	pmnode->m_pUnk24 = NULL;
-	pmnode->m_pUnk32 = m_pMNodeUnk360;
-	m_pMNodeUnk360 = pmnode;
-	if (pmnode1)
-		pmnode1->m_pUnk24 = pmnode;
+	AcFs_mnode* pOldHead = m_pLRUHead;
+	pmnode->m_pPrevNode = NULL;
+	pmnode->m_pNextNode = m_pLRUHead;
+	m_pLRUHead = pmnode;
+	if (pOldHead)
+		pOldHead->m_pPrevNode = pmnode;
 	else
-		m_pMNodeUnk368 = pmnode;
+		m_pLRUTail = pmnode;
 
 	return ERROR_SUCCESS;
 }
@@ -578,18 +590,18 @@ void AcFsIStream::LRURemove(AcFs_mnode* pmnode)
 {
 	if (pmnode->m_pBuffer != NULL)
 	{
-		m_uUnk392 -= m_uBlockSize;
-		if (pmnode->m_pUnk24 != NULL)
-			pmnode->m_pUnk24->m_pUnk32 = pmnode->m_pUnk32;
+		m_uCachedSize -= m_uBlockSize;
+		if (pmnode->m_pPrevNode != NULL)
+			pmnode->m_pPrevNode->m_pNextNode = pmnode->m_pNextNode;
 		else
-			m_pMNodeUnk360 = pmnode->m_pUnk32;
-		if (pmnode->m_pUnk32 != NULL)
-			pmnode->m_pUnk32->m_pUnk24 = pmnode->m_pUnk24;
+			m_pLRUHead = pmnode->m_pNextNode;
+		if (pmnode->m_pNextNode != NULL)
+			pmnode->m_pNextNode->m_pPrevNode = pmnode->m_pPrevNode;
 		else
-			m_pMNodeUnk368 = pmnode->m_pUnk24;
+			m_pLRUTail = pmnode->m_pPrevNode;
 
-		pmnode->m_pUnk24 = NULL;
-		pmnode->m_pUnk32 = NULL;
+		pmnode->m_pPrevNode = NULL;
+		pmnode->m_pNextNode = NULL;
 		free(pmnode->m_pBuffer);
 		pmnode->m_pBuffer = NULL;
 	}
@@ -597,19 +609,19 @@ void AcFsIStream::LRURemove(AcFs_mnode* pmnode)
 
 void AcFsIStream::LRUMoveToFront(AcFs_mnode* pmnode)
 {
-	if (m_pMNodeUnk360 != pmnode)
+	if (m_pLRUHead != pmnode)
 	{
-		pmnode->m_pUnk24->m_pUnk32 = pmnode->m_pUnk32;
-		if (pmnode->m_pUnk32 != NULL)
-			pmnode->m_pUnk32->m_pUnk24 = pmnode->m_pUnk24;
+		pmnode->m_pPrevNode->m_pNextNode = pmnode->m_pNextNode;
+		if (pmnode->m_pNextNode != NULL)
+			pmnode->m_pNextNode->m_pPrevNode = pmnode->m_pPrevNode;
 		else
-			m_pMNodeUnk368 = pmnode->m_pUnk24;
+			m_pLRUTail = pmnode->m_pPrevNode;
 
-		AcFs_mnode* pTmpNode = m_pMNodeUnk360;
-		m_pMNodeUnk360 = pmnode;
-		pmnode->m_pUnk24 = NULL;
-		pmnode->m_pUnk32 = pTmpNode;
-		pTmpNode->m_pUnk24 = pmnode;
+		AcFs_mnode* pTmpNode = m_pLRUHead;
+		m_pLRUHead = pmnode;
+		pmnode->m_pPrevNode = NULL;
+		pmnode->m_pNextNode = pTmpNode;
+		pTmpNode->m_pPrevNode = pmnode;
 	}
 }
 
@@ -627,7 +639,7 @@ void AcFsIStream::DeleteMemory(void)
 					if (pmnode->m_pMbHeader != NULL)
 					{
 						if (pmnode->m_pBuffer != NULL)
-							m_uUnk392 -= m_uBlockSize;
+							m_uCachedSize -= m_uBlockSize;
 						if (pmnode->m_pBuffer != NULL)
 						{
 							free(pmnode->m_pBuffer);
@@ -643,9 +655,9 @@ void AcFsIStream::DeleteMemory(void)
 		m_pmnodeTable = NULL;
 	}
 
-	m_pMNodeUnk368 = NULL;
-	m_pMNodeUnk360 = NULL;
-	m_uUnk392 = 0;
+	m_pLRUTail = NULL;
+	m_pLRUHead = NULL;
+	m_uCachedSize = 0;
 	if (m_pPrevStream != NULL)
 	{
 		m_pPrevStream->m_pNextStream = m_pNextStream;

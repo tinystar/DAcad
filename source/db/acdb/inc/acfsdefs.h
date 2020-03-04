@@ -6,6 +6,8 @@ static const int ACFS_HEADER_SIZE = 108;	// 0x6C
 #define MEMBLKS_HEADER_SIGN		0x41630E3B
 #define STRMBLK_HEADER_SIGN		0x4163003B
 
+#define BLOCKHDR_DECODE_MASK	0x4164536B
+
 #define ACFS_STREAM_HEADER				ACRX_T("AcDb:Header")
 #define ACFS_STREAM_AUXHEADER			ACRX_T("AcDb:AuxHeader")
 #define ACFS_STREAM_CLASSES				ACRX_T("AcDb:Classes")
@@ -68,7 +70,7 @@ struct AcFs6_INFO_t
 struct AcFs_STREAMINFO_t
 {
 	Adesk::Int64	nTotalSize;			// 0
-	Adesk::Int64	nUnk8;				// 8
+	Adesk::Int64	nComprSize;			// 8
 	Adesk::UInt64	uFileSize;			// 16
 	int				nComprType;			// 24
 	int				nComprLevel;		// 28

@@ -10,8 +10,8 @@ class AcFs_mbheader;
 class AcFs_fnode
 {
 public:
-	Adesk::Int32		m_blkId;	// 0
-	Adesk::Int32		m_nUnk4;	// 4
+	Adesk::Int32		m_blkId;		// 0
+	Adesk::UInt32		m_uComprSize;	// 4
 };
 
 #pragma pack (pop)
@@ -21,10 +21,10 @@ class AcFs_mnode
 {
 public:
 	AcFs_mbheader*		m_pMbHeader;	// 0
-	Adesk::Int32		m_nUnk8;		// 8
+	Adesk::UInt32		m_uComprSize;	// 8
 	AC_BYTE*			m_pBuffer;		// 16
-	AcFs_mnode*			m_pUnk24;		// 24
-	AcFs_mnode*			m_pUnk32;		// 32
+	AcFs_mnode*			m_pPrevNode;	// 24
+	AcFs_mnode*			m_pNextNode;	// 32
 	Adesk::Int32		m_nUnk40;		// 40
 	Adesk::Int64		m_nStartPos;	// 48
 };

@@ -22,6 +22,17 @@ struct AcFsComprHeader
 	{}
 };
 
+struct AcFsCodedComprHeader
+{
+	Adesk::UInt32	uSignature;		// 0
+	Adesk::Int32	nSectionId;		// 4
+	Adesk::UInt32	uComprSize;		// 8
+	Adesk::UInt32	uBlockSize;		// 12
+	Adesk::Int64	nStartPos;		// 16
+	Adesk::UInt32	uCheckSum1;		// 24
+	Adesk::UInt32	uCheckSum2;		// 28
+};
+
 #pragma pack (pop)
 
 #endif // _ACFS_CMPR_HEADER_H_

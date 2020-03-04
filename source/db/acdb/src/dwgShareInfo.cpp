@@ -20,7 +20,7 @@ static Acad::ErrorStatus getStream(const AcDwgFileHandle* pFileHandle, AcFsStrea
 	if (ERROR_NOT_FOUND == ret && bCreateIfNotFound)
 	{
 		AcFsStream* pNewStream = NULL;
-		ret = pAcFs->CreateStream(ACFS_STREAM_SHAREINFO, NULL, 0x40000000, 1, &pNewStream, 0, 0, 0);
+		ret = pAcFs->CreateStream(ACFS_STREAM_SHAREINFO, NULL, GENERIC_WRITE, 1, &pNewStream, 0, 0, 0);
 		if (ERROR_SUCCESS == ret)
 		{
 			pStream = pNewStream;

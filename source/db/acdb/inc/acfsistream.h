@@ -5,6 +5,7 @@
 #include "acfsfstream.h"
 
 class AcFs_mheader;
+class AcFs_mbheader;
 class AcFs_fnode;
 class AcFs_mnode;
 class AcFsHeap;
@@ -56,6 +57,8 @@ protected:
 
 	void DeleteMemory(void);
 
+	Adesk::Int64 GetBlockAddress(AcFs_mbheader* pHeader);
+
 protected:
 	AcFsIStream*		m_pNextStream;		// 8//8h
 	AcFsIStream*		m_pPrevStream;		// 16//10h
@@ -72,13 +75,13 @@ protected:
 	Adesk::UInt32		m_uBlockSize;		// 336//150h
 	AC_BYTE*			m_pBufferCur;		// 344//158h
 	AC_BYTE*			m_pBufferEnd;		// 352//160h
-	AcFs_mnode*			m_pMNodeUnk360;		// 360//168h
-	AcFs_mnode*			m_pMNodeUnk368;		// 368//170h
+	AcFs_mnode*			m_pLRUHead;			// 360//168h
+	AcFs_mnode*			m_pLRUTail;			// 368//170h
 	Adesk::Boolean		m_bEnableWrCache;	// 376//178h
-	Adesk::Boolean		m_bUnk380;			// 380//17Ch
+	Adesk::Boolean		m_bEndOfFile;		// 380//17Ch
 	Adesk::UInt32		m_uAcessType;		// 384//180h
 	Adesk::UInt32		m_uMaxCache;		// 388//184h
-	Adesk::UInt32		m_uUnk392;			// 392//188h
+	Adesk::UInt32		m_uCachedSize;		// 392//188h
 	AcFsStreamCallBack	m_pCallback;		// 400//190h
 	Adesk::UInt32		m_uAppFlags;		// 408//198h
 	AcFsHeap*			m_pFsHeap;			// 416//1A0h
