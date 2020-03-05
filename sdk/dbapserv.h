@@ -481,7 +481,7 @@ protected:
 
 protected:
 
-    void * mp_sessionVars;
+    void * mp_sessionVars;			// 8
 
     void acadInternalSetvar (const ACHAR *name, void * var);
 
@@ -494,13 +494,13 @@ private:
     // a derived class.  This header will ship with Tahoe Unplugged, but not 
     // Tahoe ARX.  These comments to be deleted before FCS.
 
-    AcDbDatabase* mpWorkingDatabase;
-    AcDbUndoController* mpDefaultUndoController;
-    AcDbTransactionManager* mpWorkingTransactionManager;
-    AcDbGlobals * mpWorkingGlobals;
-    AcDbAppSystemVariables * mpWorkingAppSysvars;
+    AcDbDatabase* mpWorkingDatabase;						// 16
+    AcDbUndoController* mpDefaultUndoController;			// 24
+    AcDbTransactionManager* mpWorkingTransactionManager;	// 32
+    AcDbGlobals * mpWorkingGlobals;							// 40
+    AcDbAppSystemVariables * mpWorkingAppSysvars;			// 48
 
-    code_page_id m_eSystemCodePage;
+    code_page_id m_eSystemCodePage;							// 56
                                 // Formerly "system_code_page".
                                 // Moved from module xstring.cpp.
     Adesk::Boolean mbDisplayMessages;

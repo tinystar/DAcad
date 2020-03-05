@@ -320,6 +320,9 @@
     <ClCompile Include="src\dbGlobalFuncs.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\dbhandle.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="acdb.def" />

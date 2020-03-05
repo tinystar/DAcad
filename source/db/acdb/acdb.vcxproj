@@ -245,6 +245,7 @@
     <ClCompile Include="src\dbfilerctrl.cpp" />
     <ClCompile Include="src\dbGlobalFuncs.cpp" />
     <ClCompile Include="src\dbGlobals.cpp" />
+    <ClCompile Include="src\dbhandle.cpp" />
     <ClCompile Include="src\dbHandleTable.cpp" />
     <ClCompile Include="src\dbheader.cpp" />
     <ClCompile Include="src\dbid.cpp" />

@@ -18,3 +18,9 @@ void acutDelBuffer(void *& pBuffer)
 {
 	AC_ASSERT_NOT_IMPLEMENTED();
 }
+
+Acad::ErrorStatus acutNewBuffer(void *&pOutput, size_t size)
+{
+	AC_ASSERT_NOT_IMPLEMENTED();
+	return Acad::eNotImplementedYet;
+}

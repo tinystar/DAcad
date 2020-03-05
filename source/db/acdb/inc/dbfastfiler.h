@@ -106,6 +106,14 @@ public:
 protected:
 	Acad::ErrorStatus readwithCRC(void* pBytes, Adesk::UInt64 uBytes);
 
+	template<typename T>
+	inline Acad::ErrorStatus readBaseType(T* pVal)
+	{
+		if (Acad::eOk == m_filerStatus)
+			readwithCRC(pVal, sizeof(*pVal));
+		return m_filerStatus;
+	}
+
 protected:
 	DwgFileIntImp*			m_pDwgFileInt;		// 16
 	Acad::ErrorStatus		m_filerStatus;		// 24
