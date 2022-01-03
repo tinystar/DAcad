@@ -207,6 +207,21 @@
     <ClInclude Include="inc\dbGlobalFuncs.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="inc\dbcodepg.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbHdlTblUpdater.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbHdlTblBlk.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbHandleData.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbQueue.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dbobji.cpp">
@@ -321,6 +336,21 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\dbhandle.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbcodepg.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbHdlTblUpdater.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbHdlTblBlk.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbHandleData.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dbQueue.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

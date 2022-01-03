@@ -9,6 +9,7 @@
 class AcDbObject;
 class AcDbGlobals;
 class AcDbFastDwgFiler;
+class HandleTableUpdater;
 
 
 class AcDbImpDatabase : public AcHeapOperators	// win size: 1050h
@@ -63,6 +64,7 @@ private:
 	Adesk::UInt8		m_uUnk3032;			// 3032
 	Adesk::UInt8		m_uUnk3033;			// 3033
 	AcDbHandleTable*	m_pHandleTable;		// 3048
+	HandleTableUpdater*	m_pHdlTblUpdater;	// 3064
 	AcDbGlobals*		m_pGlobals;			// 3384
 	Adesk::Int8			m_nUnk3426;			// 3426
 	FILETIME			m_FileTime;			// 3576

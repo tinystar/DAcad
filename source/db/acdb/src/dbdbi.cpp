@@ -9,6 +9,10 @@
 #include "dwgFileInti.h"
 #include "dbfastfiler.h"
 #include "acfsdefs.h"
+#include "dbcodepg.h"
+#include "dbfilerctrl.h"
+#include "dbHdlTblUpdater.h"
+#include "dbGlobalFuncs.h"
 
 bool gbForceUpperCasePswd = false;
 
@@ -30,7 +34,7 @@ AcDbImpDatabase::AcDbImpDatabase(AcDbDatabase* pDb, bool noDocument)
 	, m_pGlobals(NULL)
 	, m_bUnk3995(false)
 {
-
+	m_pHdlTblUpdater = new HandleTableUpdater();
 }
 
 AcDbImpDatabase::~AcDbImpDatabase()
@@ -230,6 +234,7 @@ Acad::ErrorStatus AcDbImpDatabase::readDwgFile(AcDwgFileHandle* pDwgFile, bool b
 	}
 
 	Acad::ErrorStatus es = AcDbImpDatabase::readR13Drawing(pDwgFile, bAllowCPConversion);
+	AC_ASSERT_NOT_IMPLEMENTED();
 	return es;
 }
 
@@ -241,13 +246,42 @@ void AcDbImpDatabase::initializeADP(void)
 Acad::ErrorStatus AcDbImpDatabase::readR13Drawing(AcDwgFileHandle* pDwgFile, bool bAllowCPConversion)
 {
 	DwgFileIntImp* pFileIntImp = (DwgFileIntImp*)pDwgFile;
-	AcDbFastDwgFiler* pFastDwgFiler = pFileIntImp->fastDwgFiler();
+	AcDbFastDwgFiler* pFastDwgFiler = pFileIntImp->fastDwgFiler();		// 328
 	//AcArray<AcLargeObjectInfo, AcArrayObjectCopyReallocator<AcLargeObjectInfo>>::setLogicalLength((char *)this + 48, 0LL);
 
 	readAuxHeader(pFastDwgFiler);
 
-	AC_ASSERT_NOT_IMPLEMENTED();
-	return Acad::eNotImplementedYet;
+	AcDbHostApplicationServices* pAppServices = acdbHostApplicationServices();
+	if (pAppServices != NULL)
+	{
+		pAppServices->acadInternalServices();
+		AC_ASSERT_NOT_IMPLEMENTED();
+	}
+
+	Acad::ErrorStatus es = Acad::eOk;
+	code_page_id cpId = pDwgFile->getCodePage();
+	if (isValidWinCodePage(cpId) || bAllowCPConversion)		// || AcadInternalServices* != NULL
+	{
+		AcDbFilerController& dbCtrl = pFastDwgFiler->controller();
+		dbCtrl.setCodePageId(cpId);
+
+		m_pHandleTable = new AcDbHandleTable(m_pDb, true);
+
+		es = pFileIntImp->startSectionRead(kSecHandles);	// 400
+		if (Acad::eOk == es)
+		{
+			m_pHdlTblUpdater->clear();
+			m_pHdlTblUpdater->setFrom(pFastDwgFiler, false);
+			bool bUnk;
+			es = dwgInHandleOffsets(*m_pHandleTable, pFastDwgFiler, m_pHdlTblUpdater, bUnk);
+		}
+	}
+	else
+	{
+		es = Acad::eNLSFileNotAvailable;
+	}
+
+	return es;
 }
 
 Acad::ErrorStatus AcDbImpDatabase::readAuxHeader(AcDbFastDwgFiler* pFastDwgFiler)
@@ -290,11 +324,15 @@ Acad::ErrorStatus AcDbImpDatabase::readAuxHeader(AcDbFastDwgFiler* pFastDwgFiler
 		m_nUnk2924 = uTmp;
 
 		pFastDwgFiler->readUInt32(&m_uUnk2932);	// 312
-		pFastDwgFiler->readUInt32(&m_uUnk2932);	// 312
+		pFastDwgFiler->readUInt32(&m_uUnk2936);	// 312
+
+		AC_ASSERT_NOT_IMPLEMENTED();
 	}
 	else
 	{
+		AC_ASSERT_NOT_IMPLEMENTED();
 	}
 
+	AC_ASSERT_NOT_IMPLEMENTED();
 	return Acad::eOk;
 }

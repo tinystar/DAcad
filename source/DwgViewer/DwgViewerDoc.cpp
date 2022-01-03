@@ -12,6 +12,7 @@
 #include "DwgViewerDoc.h"
 
 #include <propkey.h>
+#include "dbmain.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -28,6 +29,7 @@ END_MESSAGE_MAP()
 // CDwgViewerDoc 构造/析构
 
 CDwgViewerDoc::CDwgViewerDoc()
+	: m_pDatabase(NULL)
 {
 	// TODO:  在此添加一次性构造代码
 
@@ -35,6 +37,11 @@ CDwgViewerDoc::CDwgViewerDoc()
 
 CDwgViewerDoc::~CDwgViewerDoc()
 {
+	if (m_pDatabase != NULL)
+	{
+		delete m_pDatabase;
+		m_pDatabase = NULL;
+	}
 }
 
 BOOL CDwgViewerDoc::OnNewDocument()
@@ -44,6 +51,9 @@ BOOL CDwgViewerDoc::OnNewDocument()
 
 	// TODO:  在此添加重新初始化代码
 	// (SDI 文档将重用该文档)
+	m_pDatabase = new AcDbDatabase(false);
+	// test
+	m_pDatabase->readDwgFile(_T("F:\\WorkSpace\\CAD\\Acad_project\\drawing\\circle.dwg"));
 
 	return TRUE;
 }
